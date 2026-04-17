@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { scanFile } from './utils/scannerEngine'
 import { injectionRules } from './scanner/rules/injection'
+import { xssRules } from './scanner/rules/xss'
 import './App.css'
 
 function App() {
@@ -32,7 +33,7 @@ function App() {
     setFiles(filtered)
 
     const scanResults = []
-    const allRules = [...injectionRules] // Combine all rule categories
+    const allRules = [...injectionRules, ...xssRules] // Combine all rule categories
     
     for (const file of filtered) {
       console.log(`Scanning: ${file.name}...`)
