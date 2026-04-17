@@ -226,9 +226,27 @@ function App() {
                       </div>
                       <h4 className="font-bold text-slate-900 mb-1">{issue.message}</h4>
                       <p className="text-sm text-slate-600 mb-3">{issue.suggestion}</p>
-                      <div className="bg-slate-900 rounded p-3 font-mono text-xs text-red-300 border border-red-900/30">
-                        <span className="opacity-50 mr-2">{issue.line} |</span>
-                        <code>// Code highlighting coming soon</code>
+                      <div className="bg-slate-950 rounded p-3 font-mono text-[11px] text-red-200 border border-red-900/30 overflow-x-auto shadow-inner">
+                        {(() => {
+                          const lines = selectedResult.rawCode?.split('\n') || [];
+                          const targetLine = issue.line - 1; // 0-based
+                          
+                          // Show 1 line of context before and after if possible
+                          const start = Math.max(0, targetLine - 1);
+                          const end = Math.min(lines.length - 1, targetLine + 1);
+                          
+                          return lines.slice(start, end + 1).map((lineText, idx) => {
+                            const currentLineNum = start + idx + 1;
+                            const isTarget = currentLineNum === issue.line;
+                            
+                            return (
+                              <div key={idx} className={`${isTarget ? 'bg-red-950/50 -mx-3 px-3 border-l-2 border-red-500 text-red-100 font-bold' : 'opacity-40'}`}>
+                                <span className="inline-block w-8 select-none text-slate-600 text-right mr-4">{currentLineNum}</span>
+                                <code>{lineText || ' '}</code>
+                              </div>
+                            );
+                          });
+                        })()}
                       </div>
                     </div>
                   ))}

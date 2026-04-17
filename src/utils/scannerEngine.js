@@ -40,6 +40,7 @@ export const scanFile = async (file, rules) => {
     return {
       fileName: file.webkitRelativePath || file.name,
       issues,
+      rawCode: code, // Keep raw code to show snippets in UI
       success: true
     };
   } catch (error) {
