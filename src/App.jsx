@@ -302,18 +302,6 @@ function App() {
     </div>
   )
 }
-      <footer className="mt-20 py-12 border-t border-slate-200 dark:border-slate-800">
-        <div className="container mx-auto px-4 flex flex-col items-center">
-           <div className="flex items-center gap-2 mb-4">
-              <div className="h-6 w-6 rounded bg-slate-900 dark:bg-slate-200 flex items-center justify-center text-white dark:text-slate-900 font-bold text-[10px]">CG</div>
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">CodeGuard Protocol</span>
-           </div>
-           <p className="text-xs text-slate-500 font-medium">v1.0.0-Beta • Local-First Browser Analysis • 2026</p>
-        </div>
-      </footer>
-    </div>
-  )
-}
 
 export default App
 
