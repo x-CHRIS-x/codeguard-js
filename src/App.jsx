@@ -2,6 +2,11 @@ import { useState, useRef } from 'react'
 import { scanFile } from './utils/scannerEngine'
 import { injectionRules } from './scanner/rules/injection'
 import { xssRules } from './scanner/rules/xss'
+import { authRules } from './scanner/rules/auth'
+import { sensitiveDataRules } from './scanner/rules/sensitiveData'
+import { misconfigRules } from './scanner/rules/misconfig'
+import { deserializationRules } from './scanner/rules/deserialization'
+import { knownVulnsRules } from './scanner/rules/knownVulns'
 import './App.css'
 
 function App() {
@@ -33,7 +38,15 @@ function App() {
     setFiles(filtered)
 
     const scanResults = []
-    const allRules = [...injectionRules, ...xssRules] // Combine all rule categories
+    const allRules = [
+      ...injectionRules, 
+      ...xssRules,
+      ...authRules,
+      ...sensitiveDataRules,
+      ...misconfigRules,
+      ...deserializationRules,
+      ...knownVulnsRules
+    ] // Combine all rule categories
     
     for (const file of filtered) {
       console.log(`Scanning: ${file.name}...`)
