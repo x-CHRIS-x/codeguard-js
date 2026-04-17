@@ -15,6 +15,7 @@ function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
+  const [largeProjectWarning, setLargeProjectWarning] = useState(false)
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
@@ -47,6 +48,7 @@ function App() {
   const processFiles = async (fileList) => {
     setIsScanning(true)
     setSelectedFileIdx(null)
+    setLargeProjectWarning(false)
 
     const filtered = fileList.filter(file => {
       const path = file.webkitRelativePath || file.name
@@ -58,6 +60,10 @@ function App() {
 
       return !isHidden && !isNodeModules && !isDist && isSupported
     })
+
+    if (filtered.length > 50) {
+      setLargeProjectWarning(true)
+    }
 
     setFiles(filtered)
     const scanResults = []
@@ -97,6 +103,11 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {largeProjectWarning && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg border border-amber-200 dark:border-amber-800 animate-pulse">
+                <span>⚠️ LARGE PROJECT (50+ FILES)</span>
+              </div>
+            )}
             <button 
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
@@ -125,13 +136,18 @@ function App() {
             <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
           </div>
-          <div className="flex gap-3">
-            <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
-            <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
-            {results.length > 0 && (
-              <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex gap-3">
+              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
+              <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
+              {results.length > 0 && (
+                <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); setLargeProjectWarning(false); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              )}
+            </div>
+            {largeProjectWarning && results.length === 0 && (
+              <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest animate-pulse">Large project detected. Scan may be slower.</p>
             )}
           </div>
         </section>
@@ -166,7 +182,7 @@ function App() {
                   onClick={() => setSelectedFileIdx(idx)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group ${selectedFileIdx === idx ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                 >
-                  <div className={`h-2 w-2 rounded-full shrink-0 ${res.issues.length > 0 ? 'bg-red-500 shadow-sm shadow-red-500/50' : 'bg-green-500'}`}></div>
+                  <div className={`h-2 w-2 rounded-full shrink-0 ${res.issues.length > 0 ? 'bg-red-500 shadow-sm shadow-red-500/50' : (!res.success || res.hasError) ? 'bg-amber-400' : 'bg-green-500'}`}></div>
                   <span className={`text-sm truncate flex-1 font-semibold ${selectedFileIdx === idx ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
                     {res.fileName.split('/').pop()}
                   </span>
@@ -183,7 +199,7 @@ function App() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold truncate max-w-[300px]">{selectedResult?.fileName || 'Viewer'}</span>
               </div>
-              {selectedResult && <span className="text-[10px] font-black px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-md">VULNERABILITIES DETECTED</span>}
+              {selectedResult && selectedResult.issues.length > 0 && <span className="text-[10px] font-black px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-md">VULNERABILITIES DETECTED</span>}
             </div>
 
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
@@ -195,6 +211,14 @@ function App() {
                   <h3 className="font-bold text-lg">No Selection</h3>
                   <p className="text-sm">Select a scanned file from the explorer to see detailed security analysis.</p>
                 </div>
+              ) : !selectedResult.success ? (
+                <div className="h-full flex flex-col items-center justify-center text-amber-500 p-10 text-center">
+                  <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">Parse Error</h3>
+                  <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">{selectedResult.error || "This file could not be parsed. It may contain syntax errors or non-standard syntax that prevents a full scan."}</p>
+                </div>
               ) : selectedResult.issues.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-green-500">
                   <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
@@ -202,9 +226,16 @@ function App() {
                   </div>
                   <h3 className="text-xl font-black">Clean File</h3>
                   <p className="text-sm text-slate-400 mt-1 font-medium">No known security patterns detected in this file.</p>
+                  {selectedResult.hasError && <p className="text-[10px] text-amber-500 font-bold uppercase mt-4 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg">Partial Scan: Some rules failed to execute</p>}
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {selectedResult.hasError && (
+                    <div className="bg-amber-50 dark:bg-amber-900/10 p-3 flex items-center gap-3 border-b border-amber-100 dark:border-amber-900/30">
+                       <span className="text-amber-500 text-lg">⚠️</span>
+                       <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Partial scan completed. Some rules encountered errors while processing this file.</p>
+                    </div>
+                  )}
                   {selectedResult.issues.map((issue, i) => (
                     <div key={i} className="p-6 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
                       <div className="flex items-start justify-between mb-4">
@@ -233,7 +264,7 @@ function App() {
                         <div className="p-4 font-mono text-[11px] leading-relaxed overflow-x-auto text-slate-300">
                           {(() => {
                             const lines = selectedResult.rawCode?.split('\n') || [];
-                            const target = issue.line - 1;
+                            const target = typeof issue.line === 'number' ? issue.line - 1 : -1;
                             const start = Math.max(0, target - 1);
                             const end = Math.min(lines.length - 1, target + 1);
 
@@ -259,6 +290,18 @@ function App() {
         </div>
       </main>
 
+      <footer className="mt-20 py-12 border-t border-slate-200 dark:border-slate-800">
+        <div className="container mx-auto px-4 flex flex-col items-center">
+           <div className="flex items-center gap-2 mb-4">
+              <div className="h-6 w-6 rounded bg-slate-900 dark:bg-slate-200 flex items-center justify-center text-white dark:text-slate-900 font-bold text-[10px]">CG</div>
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">CodeGuard Protocol</span>
+           </div>
+           <p className="text-xs text-slate-500 font-medium">v1.0.0-Beta • Local-First Browser Analysis • 2026</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
       <footer className="mt-20 py-12 border-t border-slate-200 dark:border-slate-800">
         <div className="container mx-auto px-4 flex flex-col items-center">
            <div className="flex items-center gap-2 mb-4">

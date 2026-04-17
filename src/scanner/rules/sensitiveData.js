@@ -12,8 +12,8 @@ export const sensitiveDataRules = [
     visitor: (issues) => ({
       StringLiteral(path) {
         const val = path.node.value;
-        // Basic Regex Patterns for common secrets
-        const jwtPattern = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
+        // Tightened Regex Patterns
+        const jwtPattern = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
         const awsKeyPattern = /(?:AKIA|A3T|AGPA|AIDA|AROA|AIPA|AQCA|AMZA|AWA|A2A)[A-Z0-9]{16}/;
         const ipPattern = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
 

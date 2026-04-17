@@ -32,7 +32,9 @@ export const injectionRules = [
     owasp: "A1:2021-Injection",
     visitor: (issues) => ({
       CallExpression(path) {
-        const calleeName = path.node.callee.name;
+        const calleeName = path.node.callee?.name;
+        if (!calleeName) return; // Guard against MemberExpressions like window.setTimeout
+
         if (calleeName === 'setTimeout' || calleeName === 'setInterval') {
           const firstArg = path.node.arguments[0];
           // Check if first argument is a StringLiteral or TemplateLiteral (not a function/arrow)

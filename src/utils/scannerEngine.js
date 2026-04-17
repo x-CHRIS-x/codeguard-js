@@ -1,4 +1,3 @@
-import { parseToAST } from './babelParser';
 import * as Babel from '@babel/standalone';
 
 /**
@@ -9,6 +8,7 @@ import * as Babel from '@babel/standalone';
  * @returns {Promise<Object>} - Results including AST and any vulnerabilities.
  */
 export const scanFile = async (file, rules) => {
+  let hasError = false;
   try {
     const code = await file.text();
     const issues = [];
@@ -22,6 +22,9 @@ export const scanFile = async (file, rules) => {
           ast: false,
           code: false,
           highlightCode: false,
+          parserOpts: {
+            errorRecovery: true // Allows partial scans of broken files
+          },
           presets: [
             file.name.endsWith('.ts') || file.name.endsWith('.tsx') ? 'typescript' : null,
             ['react', { runtime: 'automatic' }]
@@ -34,21 +37,24 @@ export const scanFile = async (file, rules) => {
         });
       } catch (ruleError) {
         console.error(`Error running rule ${rule.name} on ${file.name}:`, ruleError);
+        hasError = true;
       }
     }
 
     return {
       fileName: file.webkitRelativePath || file.name,
       issues,
-      rawCode: code, // Keep raw code to show snippets in UI
-      success: true
+      rawCode: code,
+      success: true,
+      hasError, // Track if any rule execution failed
     };
   } catch (error) {
     console.error("Scanner Error:", error);
     return {
       fileName: file.webkitRelativePath || file.name,
       error: error.message,
-      success: false
+      success: false,
+      hasError: true
     };
   }
 };

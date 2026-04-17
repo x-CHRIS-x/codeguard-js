@@ -79,8 +79,9 @@ export const authRules = [
     visitor: (issues) => ({
       AssignmentExpression(path) {
         if (path.node.left.type === 'MemberExpression' && path.node.left.object.name === 'document' && path.node.left.property.name === 'cookie') {
-          if (path.node.right && path.node.right.type === 'StringLiteral') {
-            const cookieVal = path.node.right.value.toLowerCase();
+          const right = path.node.right;
+          if (right.type === 'StringLiteral') {
+            const cookieVal = right.value.toLowerCase();
             if (!cookieVal.includes('httponly') || !cookieVal.includes('secure')) {
                issues.push({
                 id: "OWASP-A2-003",
@@ -91,6 +92,15 @@ export const authRules = [
                 suggestion: "Always append '; HttpOnly; Secure' when manually setting cookies containing sensitive session data."
               });
             }
+          } else if (right.type === 'TemplateLiteral') {
+            issues.push({
+              id: "OWASP-A2-003",
+              severity: "MEDIUM",
+              line: path.node.loc?.start?.line || 'unknown',
+              column: path.node.loc?.start?.column || 'unknown',
+              message: "Cookie set via template literal — verify HttpOnly and Secure flags are present",
+              suggestion: "Ensure template literals used for cookies include '; HttpOnly; Secure' for sensitive data."
+            });
           }
         }
       }
