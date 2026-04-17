@@ -66,7 +66,7 @@ function App() {
     setResults(scanResults)
     setIsScanning(false)
     if (scanResults.length > 0) setSelectedFileIdx(0)
-  }, [results]; // Added results to dependency array to trigger re-memoization
+  }
 
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
