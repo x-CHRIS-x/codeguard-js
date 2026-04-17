@@ -1,120 +1,130 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
+              <span className="font-bold">CG</span>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              CodeGuard<span className="text-red-600">-JS</span>
+            </h1>
+          </div>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <a href="#" className="hover:text-red-600 transition-colors">Documentation</a>
+            <a href="#" className="hover:text-red-600 transition-colors">OWASP Rules</a>
+            <a href="#" className="hover:text-red-600 transition-colors">GitHub</a>
+          </nav>
+          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all shadow-sm">
+            Export Report (PDF)
+          </button>
         </div>
-        <div>
-          <h1 className="text-4xl text-red-500 font-bold">CodeGuard-JS is Live!</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Hero & Upload Section */}
+        <section className="mb-12 text-center">
+          <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+            Static Security Analysis for JS
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-slate-600">
+            Analyze your JavaScript code for OWASP vulnerabilities locally in your browser. 
+            No data ever leaves your machine.
           </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+          
+          <div className="mx-auto max-w-xl">
+            <div className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 transition-all hover:border-red-400 hover:bg-red-50/50">
+              <div className="mb-4 rounded-full bg-red-100 p-4 text-red-600 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-slate-900">Upload Project Folder</h3>
+              <p className="text-sm text-slate-500 mb-6">Drag and drop or click to select files (.js, .jsx, .ts, .tsx)</p>
+              <div className="flex gap-3">
+                <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm">
+                  Select Files
+                </button>
+                <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm">
+                  Select Folder
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div className="ticks"></div>
+        {/* Dashboard / Summary Grid */}
+        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Files Scanned', value: '0', color: 'text-slate-900' },
+            { label: 'Total Issues', value: '0', color: 'text-red-600' },
+            { label: 'Critical Risks', value: '0', color: 'text-red-700' },
+            { label: 'Security Score', value: '100%', color: 'text-green-600' }
+          ].map((stat, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+              <p className={`mt-1 text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+            </div>
+          ))}
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Results Area (Mockup) */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* File List */}
+          <section className="lg:col-span-1">
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+              <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">Scan Results</h3>
+              </div>
+              <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+                <div className="flex items-center justify-center py-12 px-6 text-center italic text-slate-400">
+                  <p>No files scanned yet. Upload code to begin analysis.</p>
+                </div>
+              </div>
+            </div>
+          </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {/* Code Viewer / Issue Detail Mockup */}
+          <section className="lg:col-span-2">
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm h-full flex flex-col min-h-[500px]">
+              <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-3 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-700 italic">No file selected</h3>
+                <div className="flex gap-2">
+                  <div className="h-3 w-3 rounded-full bg-slate-200"></div>
+                  <div className="h-3 w-3 rounded-full bg-slate-200"></div>
+                  <div className="h-3 w-3 rounded-full bg-slate-200"></div>
+                </div>
+              </div>
+              <div className="flex-1 bg-slate-900 p-6 font-mono text-sm text-slate-300 overflow-auto">
+                <div className="opacity-30">
+                  <p className="mb-2">// AST-based code analysis will appear here</p>
+                  <p className="mb-2">1  const scan = () =&gt; &#123;</p>
+                  <p className="mb-2">2    // Select a file to view findings</p>
+                  <p className="mb-2">3  &#125;</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-20 border-t border-slate-200 bg-white py-12">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-slate-500">
+            &copy; 2026 CodeGuard-JS. Built for Local IT Security Analysis & Web Development.
+          </p>
+          <div className="mt-4 flex justify-center gap-6">
+            <a href="#" className="text-slate-400 hover:text-slate-600 transition-colors">Documentation</a>
+            <a href="#" className="text-slate-400 hover:text-slate-600 transition-colors">Privacy Policy</a>
+            <a href="#" className="text-slate-400 hover:text-slate-600 transition-colors">Changelog</a>
+          </div>
+        </div>
+      </footer>
+    </div>
   )
 }
 
