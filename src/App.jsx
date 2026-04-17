@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react'
+import { scanFile } from './utils/scannerEngine'
 import './App.css'
 
 function App() {
   const [files, setFiles] = useState([])
+  const [results, setResults] = useState([])
   const [isScanning, setIsScanning] = useState(false)
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
@@ -12,21 +14,33 @@ function App() {
     processFiles(uploadedFiles)
   }
 
-  const processFiles = (fileList) => {
-    // Filter logic: Supported types and ignore hidden/system folders
+  const processFiles = async (fileList) => {
+    setIsScanning(true)
+    
     const filtered = fileList.filter(file => {
       const path = file.webkitRelativePath || file.name
       const isHidden = path.split('/').some(part => part.startsWith('.'))
       const isNodeModules = path.includes('node_modules')
       const isDist = path.includes('dist') || path.includes('build')
-      
       const extension = path.split('.').pop().toLowerCase()
-      const isSupported = ['js', 'jsx', 'ts', 'tsx', 'html'].includes(extension)
+      const isSupported = ['js', 'jsx', 'ts', 'tsx'].includes(extension) // Only scanning JS/TS for now
 
       return !isHidden && !isNodeModules && !isDist && isSupported
     })
 
-    setFiles(prev => [...prev, ...filtered])
+    setFiles(filtered)
+
+    // Verification Step: Scan each file and log to console
+    const scanResults = []
+    for (const file of filtered) {
+      console.log(`Scanning: ${file.name}...`)
+      const result = await scanFile(file, []) // Empty rules for now
+      scanResults.push(result)
+    }
+    
+    setResults(scanResults)
+    console.log("Scan Complete:", scanResults)
+    setIsScanning(false)
   }
 
   return (
