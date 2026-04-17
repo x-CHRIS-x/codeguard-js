@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { scanFile } from './utils/scannerEngine'
 import { injectionRules } from './scanner/rules/injection'
 import { xssRules } from './scanner/rules/xss'
@@ -14,10 +14,20 @@ function App() {
   const [results, setResults] = useState([])
   const [isScanning, setIsScanning] = useState(false)
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
+  const [darkMode, setDarkMode] = useState(false)
+
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
 
-  // Derived stats
+  // Handle Dark Mode Class
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
   const stats = useMemo(() => {
     const totalIssues = results.reduce((acc, res) => acc + (res.issues?.length || 0), 0)
     const criticalIssues = results.reduce((acc, res) => 
@@ -37,7 +47,7 @@ function App() {
   const processFiles = async (fileList) => {
     setIsScanning(true)
     setSelectedFileIdx(null)
-    
+
     const filtered = fileList.filter(file => {
       const path = file.webkitRelativePath || file.name
       const isHidden = path.split('/').some(part => part.startsWith('.'))
@@ -50,19 +60,18 @@ function App() {
     })
 
     setFiles(filtered)
-
     const scanResults = []
     const allRules = [
       ...injectionRules, ...xssRules, ...authRules,
       ...sensitiveDataRules, ...misconfigRules,
       ...deserializationRules, ...knownVulnsRules
     ]
-    
+
     for (const file of filtered) {
       const result = await scanFile(file, allRules)
       scanResults.push(result)
     }
-    
+
     setResults(scanResults)
     setIsScanning(false)
     if (scanResults.length > 0) setSelectedFileIdx(0)
@@ -71,197 +80,192 @@ function App() {
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Hidden Inputs */}
+    <div className="min-h-screen bg-slate-50 transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" accept=".js,.jsx,.ts,.tsx" />
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
-              <span className="font-bold text-xs uppercase">CG</span>
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-500/20">
+              <span className="font-black text-sm">CG</span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              CodeGuard<span className="text-red-600">-JS</span>
+            <h1 className="text-xl font-extrabold tracking-tight">
+              CodeGuard<span className="text-red-600">JS</span>
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            {isScanning && (
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-500 animate-pulse">
-                <div className="h-2 w-2 rounded-full bg-red-600"></div>
-                Scanning...
-              </div>
-            )}
+
+          <div className="flex items-center gap-3">
             <button 
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all shadow-sm disabled:opacity-30" 
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+              title="Toggle Theme"
+            >
+              {darkMode ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              )}
+            </button>
+            <button 
+              className="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition-all disabled:opacity-30" 
               disabled={results.length === 0}
             >
-              Export Report
+              Export PDF
             </button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Upload Section (Miniaturized if results exist) */}
-        <section className={`transition-all duration-500 ${results.length > 0 ? 'mb-8' : 'mb-12 py-10 text-center'}`}>
-          {!results.length && (
-            <>
-              <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">Static Security Analysis</h2>
-              <p className="mx-auto mb-8 max-w-2xl text-lg text-slate-600">Secure your JavaScript code locally. No data ever leaves your machine.</p>
-            </>
-          )}
-          
-          <div className={`mx-auto ${results.length > 0 ? 'max-w-none flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200' : 'max-w-xl'}`}>
-            <div className={results.length > 0 ? 'flex items-center gap-4' : ''}>
-               {results.length > 0 && <h3 className="font-bold text-slate-700">Ready for new scan?</h3>}
-               <div className="flex gap-3">
-                  <button onClick={() => fileInputRef.current.click()} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm">
-                    Select Files
-                  </button>
-                  <button onClick={() => folderInputRef.current.click()} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm">
-                    Select Folder
-                  </button>
-               </div>
-            </div>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Simplified Upload */}
+        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
+          <div className={results.length === 0 ? 'max-w-2xl' : ''}>
+            <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
+            <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
             {results.length > 0 && (
-              <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); }} className="text-sm font-bold text-red-600 hover:underline">
-                Clear All
+              <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
               </button>
             )}
           </div>
         </section>
 
-        {/* Dashboard Stats */}
-        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Stats Row */}
+        <section className="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Files Scanned', value: files.length, color: 'text-slate-900' },
-            { label: 'Total Issues', value: stats.totalIssues, color: stats.totalIssues > 0 ? 'text-red-600' : 'text-slate-900' },
-            { label: 'Critical Risks', value: stats.criticalIssues, color: stats.criticalIssues > 0 ? 'text-red-700' : 'text-slate-900' },
-            { label: 'Security Score', value: `${stats.securityScore}%`, color: stats.securityScore > 80 ? 'text-green-600' : 'text-orange-600' }
-          ].map((stat, i) => (
-            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:scale-[1.02]">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{stat.label}</p>
-              <p className={`mt-1 text-3xl font-black ${stat.color}`}>{stat.value}</p>
+            { label: 'Files', value: files.length, color: 'text-slate-900 dark:text-white' },
+            { label: 'Issues', value: stats.totalIssues, color: stats.totalIssues > 0 ? 'text-red-600' : 'text-slate-900 dark:text-white' },
+            { label: 'Critical', value: stats.criticalIssues, color: stats.criticalIssues > 0 ? 'text-red-500' : 'text-slate-900 dark:text-white' },
+            { label: 'Score', value: `${stats.securityScore}%`, color: stats.securityScore > 80 ? 'text-green-500' : 'text-orange-500' }
+          ].map((s, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{s.label}</span>
+              <span className={`text-2xl font-black ${s.color}`}>{s.value}</span>
             </div>
           ))}
         </section>
 
-        {/* Analysis Interface */}
-        <div className="grid gap-6 lg:grid-cols-3 h-[600px]">
-          {/* File List Panel */}
-          <aside className="lg:col-span-1 flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Scan Results</h3>
+        {/* Main Workspace */}
+        <div className="flex flex-col lg:flex-row gap-6 h-[700px]">
+          {/* File Browser */}
+          <div className="w-full lg:w-80 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-500">Explorer</span>
+              {isScanning && <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping"></div>}
             </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 font-medium">
-              {!results.length ? (
-                <div className="flex h-full items-center justify-center p-8 text-center text-sm italic text-slate-400">Upload code to start</div>
-              ) : (
-                results.map((res, idx) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setSelectedFileIdx(idx)}
-                    className={`flex items-center justify-between px-4 py-4 cursor-pointer transition-all ${selectedFileIdx === idx ? 'bg-red-50 border-l-4 border-red-600' : 'hover:bg-slate-50'}`}
-                  >
-                    <div className="min-w-0 pr-4">
-                      <p className={`text-sm truncate ${selectedFileIdx === idx ? 'text-red-900 font-bold' : 'text-slate-700'}`}>
-                        {res.fileName}
-                      </p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-tighter">
-                        {res.issues.length} Issues found
-                      </p>
-                    </div>
-                    {res.issues.length > 0 ? (
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600">
-                        !
-                      </span>
-                    ) : (
-                      <span className="text-green-500">✓</span>
-                    )}
-                  </div>
-                ))
-              )}
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {results.map((res, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={() => setSelectedFileIdx(idx)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group ${selectedFileIdx === idx ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                >
+                  <div className={`h-2 w-2 rounded-full shrink-0 ${res.issues.length > 0 ? 'bg-red-500 shadow-sm shadow-red-500/50' : 'bg-green-500'}`}></div>
+                  <span className={`text-sm truncate flex-1 font-semibold ${selectedFileIdx === idx ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                    {res.fileName.split('/').pop()}
+                  </span>
+                  {res.issues.length > 0 && <span className="text-[10px] font-black text-slate-400 group-hover:text-red-400">{res.issues.length}</span>}
+                </button>
+              ))}
+              {results.length === 0 && <p className="text-center text-xs text-slate-400 mt-10 italic">No files yet</p>}
             </div>
-          </aside>
+          </div>
 
-          {/* Details Panel */}
-          <section className="lg:col-span-2 flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="border-b border-slate-100 bg-slate-50/50 px-4 py-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-700">
-                {selectedResult ? selectedResult.fileName : "Select a file to view issues"}
-              </h3>
-              {selectedResult && (
-                <span className="rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                  {selectedResult.issues.length} Issues
-                </span>
-              )}
+          {/* Code & Issue Viewer */}
+          <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold truncate max-w-[300px]">{selectedResult?.fileName || 'Viewer'}</span>
+              </div>
+              {selectedResult && <span className="text-[10px] font-black px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-md">VULNERABILITIES DETECTED</span>}
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-6">
+
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
               {!selectedResult ? (
-                <div className="flex h-full flex-col items-center justify-center text-slate-400">
-                  <svg className="mb-4 h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-sm italic">Click a file on the left to inspect vulnerabilities</p>
+                <div className="h-full flex flex-col items-center justify-center p-10 text-center opacity-40">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                  <h3 className="font-bold text-lg">No Selection</h3>
+                  <p className="text-sm">Select a scanned file from the explorer to see detailed security analysis.</p>
                 </div>
               ) : selectedResult.issues.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center text-green-500">
-                  <span className="mb-2 text-4xl">🛡️</span>
-                  <p className="font-bold">No vulnerabilities detected</p>
-                  <p className="text-xs text-slate-400 mt-1">This file appears to follow common security best practices.</p>
+                <div className="h-full flex flex-col items-center justify-center text-green-500">
+                  <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <h3 className="text-xl font-black">Clean File</h3>
+                  <p className="text-sm text-slate-400 mt-1 font-medium">No known security patterns detected in this file.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {selectedResult.issues.map((issue, i) => (
-                    <div key={i} className="rounded-lg border-l-4 border-red-500 bg-red-50/50 p-4 shadow-sm">
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-100 px-2 py-0.5 rounded">
-                          {issue.id} | {issue.severity}
-                        </span>
-                        <span className="text-xs font-bold text-slate-400">Line {issue.line}</span>
+                    <div key={i} className="p-6 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${issue.severity === 'CRITICAL' ? 'bg-red-600 text-white' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'}`}>
+                              {issue.severity}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{issue.id}</span>
+                          </div>
+                          <h4 className="font-black text-slate-900 dark:text-white text-lg leading-tight">{issue.message}</h4>
+                        </div>
+                        <div className="text-xs font-black text-slate-400 whitespace-nowrap bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">LINE {issue.line}</div>
                       </div>
-                      <h4 className="font-bold text-slate-900 mb-1">{issue.message}</h4>
-                      <p className="text-sm text-slate-600 mb-3">{issue.suggestion}</p>
-                      <div className="bg-slate-950 rounded p-3 font-mono text-[11px] text-red-200 border border-red-900/30 overflow-x-auto shadow-inner">
-                        {(() => {
-                          const lines = selectedResult.rawCode?.split('\n') || [];
-                          const targetLine = issue.line - 1; // 0-based
-                          
-                          // Show 1 line of context before and after if possible
-                          const start = Math.max(0, targetLine - 1);
-                          const end = Math.min(lines.length - 1, targetLine + 1);
-                          
-                          return lines.slice(start, end + 1).map((lineText, idx) => {
-                            const currentLineNum = start + idx + 1;
-                            const isTarget = currentLineNum === issue.line;
-                            
-                            return (
-                              <div key={idx} className={`${isTarget ? 'bg-red-950/50 -mx-3 px-3 border-l-2 border-red-500 text-red-100 font-bold' : 'opacity-40'}`}>
-                                <span className="inline-block w-8 select-none text-slate-600 text-right mr-4">{currentLineNum}</span>
-                                <code>{lineText || ' '}</code>
-                              </div>
-                            );
-                          });
-                        })()}
+
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-medium leading-relaxed">
+                        {issue.suggestion}
+                      </p>
+
+                      <div className="bg-slate-950 dark:bg-black rounded-xl overflow-hidden border border-slate-800 shadow-xl">
+                        <div className="px-4 py-2 bg-slate-900/50 border-b border-slate-800 flex items-center gap-1.5">
+                           <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
+                           <div className="w-2 h-2 rounded-full bg-orange-500/50"></div>
+                           <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
+                        </div>
+                        <div className="p-4 font-mono text-[11px] leading-relaxed overflow-x-auto text-slate-300">
+                          {(() => {
+                            const lines = selectedResult.rawCode?.split('\n') || [];
+                            const target = issue.line - 1;
+                            const start = Math.max(0, target - 1);
+                            const end = Math.min(lines.length - 1, target + 1);
+
+                            return lines.slice(start, end + 1).map((text, idx) => {
+                              const num = start + idx + 1;
+                              const isTarget = num === issue.line;
+                              return (
+                                <div key={idx} className={`flex gap-4 ${isTarget ? 'text-red-400 bg-red-400/10 -mx-4 px-4 font-bold' : 'opacity-40'}`}>
+                                  <span className="w-6 text-right select-none text-slate-600">{num}</span>
+                                  <code className="whitespace-pre">{text || ' '}</code>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </section>
+          </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-20 border-t border-slate-200 bg-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">&copy; 2026 CodeGuard-JS</p>
-          <p className="mt-2 text-sm text-slate-500">Local IT Security Analysis & Web Development Compliance Tool</p>
+      <footer className="mt-20 py-12 border-t border-slate-200 dark:border-slate-800">
+        <div className="container mx-auto px-4 flex flex-col items-center">
+           <div className="flex items-center gap-2 mb-4">
+              <div className="h-6 w-6 rounded bg-slate-900 dark:bg-slate-200 flex items-center justify-center text-white dark:text-slate-900 font-bold text-[10px]">CG</div>
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">CodeGuard Protocol</span>
+           </div>
+           <p className="text-xs text-slate-500 font-medium">v1.0.0-Beta • Local-First Browser Analysis • 2026</p>
         </div>
       </footer>
     </div>
@@ -269,3 +273,4 @@ function App() {
 }
 
 export default App
+
