@@ -11,31 +11,30 @@ import * as Babel from '@babel/standalone';
 export const scanFile = async (file, rules) => {
   try {
     const code = await file.text();
-    const ast = parseToAST(code, file.name);
     const issues = [];
 
-    // Correctly find traverse in @babel/standalone
-    const traverse = Babel.traverse || (Babel.packages ? Babel.packages.traverse : null);
-    
-    if (traverse) {
-      rules.forEach(rule => {
-        // rules is an array of rule objects, each with a visitor function
-        // the visitor function takes the issues array to populate it
-        traverse(ast, rule.visitor(issues));
-      });
-    } else {
-      console.warn("Babel.traverse not found in standalone package. Attempting fallback via transform...");
-      
-      // Fallback: If direct traverse is missing, use Babel.transform with a custom plugin
-      // for each rule to achieve the same effect
-      rules.forEach(rule => {
+    // In @babel/standalone, the most reliable way to traverse with custom rules
+    // is to use Babel.transform with a custom plugin for each rule.
+    for (const rule of rules) {
+      try {
         Babel.transform(code, {
-          ast: true,
-          code: false,
           filename: file.name,
-          plugins: [() => ({ visitor: rule.visitor(issues) })]
+          ast: false,
+          code: false,
+          highlightCode: false,
+          presets: [
+            file.name.endsWith('.ts') || file.name.endsWith('.tsx') ? 'typescript' : null,
+            ['react', { runtime: 'automatic' }]
+          ].filter(Boolean),
+          plugins: [
+            () => ({
+              visitor: rule.visitor(issues)
+            })
+          ]
         });
-      });
+      } catch (ruleError) {
+        console.error(`Error running rule ${rule.name} on ${file.name}:`, ruleError);
+      }
     }
 
     return {
