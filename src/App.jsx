@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { scanFile } from './utils/scannerEngine'
+import { injectionRules } from './scanner/rules/injection'
 import './App.css'
 
 function App() {
@@ -23,23 +24,28 @@ function App() {
       const isNodeModules = path.includes('node_modules')
       const isDist = path.includes('dist') || path.includes('build')
       const extension = path.split('.').pop().toLowerCase()
-      const isSupported = ['js', 'jsx', 'ts', 'tsx'].includes(extension) // Only scanning JS/TS for now
+      const isSupported = ['js', 'jsx', 'ts', 'tsx'].includes(extension)
 
       return !isHidden && !isNodeModules && !isDist && isSupported
     })
 
     setFiles(filtered)
 
-    // Verification Step: Scan each file and log to console
     const scanResults = []
+    const allRules = [...injectionRules] // Combine all rule categories
+    
     for (const file of filtered) {
       console.log(`Scanning: ${file.name}...`)
-      const result = await scanFile(file, []) // Empty rules for now
+      const result = await scanFile(file, allRules)
       scanResults.push(result)
+      
+      if (result.issues?.length > 0) {
+        console.warn(`Vulnerability found in ${file.name}:`, result.issues)
+      }
     }
     
     setResults(scanResults)
-    console.log("Scan Complete:", scanResults)
+    console.log("Full Scan Results:", scanResults)
     setIsScanning(false)
   }
 

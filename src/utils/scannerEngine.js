@@ -14,20 +14,28 @@ export const scanFile = async (file, rules) => {
     const ast = parseToAST(code, file.name);
     const issues = [];
 
-    // Rules logic: Use @babel/standalone's traverse if available
-    // or access it via Babel.availablePlugins
-    // In @babel/standalone, the traverse function is usually not exported directly 
-    // but we can use the Babel.transform feature or check the export.
+    // Correctly find traverse in @babel/standalone
+    const traverse = Babel.traverse || (Babel.packages ? Babel.packages.traverse : null);
     
-    // Fallback: If Babel.traverse is not available, we can use a custom visitor 
-    // through Babel.transform. But most builds of standalone expose traverse.
-    
-    if (Babel.traverse) {
+    if (traverse) {
       rules.forEach(rule => {
-        Babel.traverse(ast, rule.visitor(issues));
+        // rules is an array of rule objects, each with a visitor function
+        // the visitor function takes the issues array to populate it
+        traverse(ast, rule.visitor(issues));
       });
     } else {
-      console.warn("Babel.traverse not found. Rule scanning skipped.");
+      console.warn("Babel.traverse not found in standalone package. Attempting fallback via transform...");
+      
+      // Fallback: If direct traverse is missing, use Babel.transform with a custom plugin
+      // for each rule to achieve the same effect
+      rules.forEach(rule => {
+        Babel.transform(code, {
+          ast: true,
+          code: false,
+          filename: file.name,
+          plugins: [() => ({ visitor: rule.visitor(issues) })]
+        });
+      });
     }
 
     return {
