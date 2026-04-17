@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  define: {
+    // Required for some @babel dependencies that expect Node environment
+    'process.env': {},
+    'global': {},
+  }
 })
