@@ -14,18 +14,24 @@ function App() {
   const [results, setResults] = useState([])
   const [isScanning, setIsScanning] = useState(false)
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
   const [largeProjectWarning, setLargeProjectWarning] = useState(false)
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
 
-  // Handle Dark Mode Class
+  // Handle Dark Mode Class and Persistence
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
 
