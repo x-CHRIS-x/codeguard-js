@@ -1,16 +1,56 @@
-# React + Vite
+# CodeGuard-JS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+CodeGuard-JS is a localized static analysis tool designed for web developers to detect latent security vulnerabilities in JavaScript code. It operates entirely within the browser, ensuring that no code is ever sent to a server, providing maximum privacy and security.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Localized Analysis: All processing happens on your machine.
+- AST-Based Detection: Uses Babel to parse code into an Abstract Syntax Tree (AST) for precise vulnerability mapping.
+- OWASP Alignment: Detects issues mapped to OWASP Top 10 categories.
+- Folder Upload Support: Analyze entire projects at once (ignores node_modules, dist, etc.).
+- Professional UI: IDE-style dashboard with syntax highlighting and dark mode support.
+- Exportable Reports: Download scan results as PDF reports using jsPDF.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Frontend: React + Vite
+- Styling: Tailwind CSS
+- Parsing: @babel/standalone + @babel/traverse
+- Reporting: jsPDF
 
-## Expanding the ESLint configuration
+## Detection Rules (OWASP Mapped)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- A1: Injection: eval(), dynamic setTimeout/setInterval.
+- A2: Broken Authentication: Hardcoded passwords, localStorage tokens.
+- A3: Sensitive Data Exposure: Hardcoded API keys, credentials, IPs.
+- A6: Security Misconfiguration: CORS wildcard, console.log sensitive data.
+- A7: Cross-Site Scripting (XSS): innerHTML, document.write(), dangerouslySetInnerHTML.
+- A8: Insecure Deserialization: Unsafe JSON.parse().
+- A9: Known Vulnerabilities: Risky library imports.
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/x-CHRIS-x/codeguard-js.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## How it Works
+
+1. Upload: User selects a file or folder.
+2. Filter: The tool filters for .js, .jsx, .ts, .tsx, and .html files.
+3. Parse: Babel converts the code into an AST.
+4. Scan: Custom rules traverse the AST nodes to find security patterns.
+5. Report: Results are displayed with line numbers and descriptions.
+
+## License
+
+Distributed under the MIT License. See LICENSE for more information.
