@@ -215,7 +215,7 @@ function App() {
         <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
           <div className={results.length === 0 ? 'max-w-2xl' : ''}>
             <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{results.length === 0 ? 'Upload or drop your JavaScript project to detect vulnerabilities instantly.' : `${files.length} files processed. Select one to view issues.`}</p>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-3">
