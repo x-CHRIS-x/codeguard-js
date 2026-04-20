@@ -14,18 +14,24 @@ function App() {
   const [results, setResults] = useState([])
   const [isScanning, setIsScanning] = useState(false)
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
   const [largeProjectWarning, setLargeProjectWarning] = useState(false)
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
 
-  // Handle Dark Mode Class
+  // Handle Dark Mode Class and Persistence
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
 
@@ -86,12 +92,12 @@ function App() {
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
   return (
-    <div className="min-h-screen bg-slate-50 transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-100 transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" accept=".js,.jsx,.ts,.tsx" />
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-300 dark:border-slate-800 bg-white/95 dark:bg-slate-900/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-500/20">
@@ -104,13 +110,13 @@ function App() {
 
           <div className="flex items-center gap-3">
             {largeProjectWarning && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg border border-amber-200 dark:border-amber-800 animate-pulse">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg border border-amber-300 dark:border-amber-800 animate-pulse">
                 <span>⚠️ LARGE PROJECT (50+ FILES)</span>
               </div>
             )}
             <button 
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title="Toggle Theme"
             >
               {darkMode ? (
@@ -120,7 +126,7 @@ function App() {
               )}
             </button>
             <button 
-              className="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition-all disabled:opacity-30" 
+              className="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white transition-all disabled:opacity-30" 
               disabled={results.length === 0}
             >
               Export PDF
@@ -131,14 +137,14 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Simplified Upload */}
-        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
+        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
           <div className={results.length === 0 ? 'max-w-2xl' : ''}>
             <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-3">
-              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
+              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Select Files</button>
               <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
               {results.length > 0 && (
                 <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); setLargeProjectWarning(false); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
