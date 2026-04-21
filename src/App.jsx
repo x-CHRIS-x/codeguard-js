@@ -33,8 +33,14 @@ function App() {
     const totalIssues = results.reduce((acc, res) => acc + (res.issues?.length || 0), 0)
     const criticalIssues = results.reduce((acc, res) => 
       acc + (res.issues?.filter(i => i.severity === 'CRITICAL').length || 0), 0)
+    
+    const WEIGHTS = { CRITICAL: 20, HIGH: 10, MEDIUM: 5, LOW: 1 }
+    const penalty = results.reduce((acc, res) => 
+      acc + (res.issues?.reduce((sum, issue) => 
+        sum + (WEIGHTS[issue.severity] || 5), 0) || 0), 0)
+
     const securityScore = results.length > 0 
-      ? Math.max(0, 100 - (totalIssues * 5)) 
+      ? Math.max(0, 100 - penalty) 
       : 100
 
     return { totalIssues, criticalIssues, securityScore }
