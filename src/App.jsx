@@ -16,6 +16,7 @@ function App() {
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
   const [largeProjectWarning, setLargeProjectWarning] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
@@ -49,6 +50,64 @@ function App() {
   const handleFileUpload = (e) => {
     const uploadedFiles = Array.from(e.target.files)
     processFiles(uploadedFiles)
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const items = e.dataTransfer.items
+    if (!items) return
+
+    const filesToProcess = []
+    
+    const traverseFileTree = async (item, path = "") => {
+      if (item.isFile) {
+        return new Promise((resolve) => {
+          item.file((file) => {
+            // Reconstruct the relative path for the scanner
+            Object.defineProperty(file, 'webkitRelativePath', {
+              value: path + file.name,
+              writable: false
+            })
+            filesToProcess.push(file)
+            resolve()
+          })
+        })
+      } else if (item.isDirectory) {
+        const dirReader = item.createReader()
+        const entries = await new Promise((resolve) => {
+          dirReader.readEntries((entries) => resolve(entries))
+        })
+        for (const entry of entries) {
+          await traverseFileTree(entry, path + item.name + "/")
+        }
+      }
+    }
+
+    const traversePromises = []
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i].webkitGetAsEntry()
+      if (item) {
+        traversePromises.push(traverseFileTree(item))
+      }
+    }
+
+    await Promise.all(traversePromises)
+    processFiles(filesToProcess)
   }
 
   const processFiles = async (fileList) => {
@@ -92,7 +151,23 @@ function App() {
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
   return (
-    <div className="min-h-screen bg-white transition-colors duration-300 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-100">
+    <div 
+      className="min-h-screen bg-white transition-colors duration-300 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-100 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 z-[100] bg-red-600/10 backdrop-blur-[2px] border-4 border-dashed border-red-600 m-4 rounded-3xl flex items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 border border-slate-200 dark:border-zinc-800">
+            <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-red-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p className="text-xl font-black uppercase tracking-tight">Drop files to scan</p>
+          </div>
+        </div>
+      )}
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" accept=".js,.jsx,.ts,.tsx" />
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
@@ -140,7 +215,7 @@ function App() {
         <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-slate-200 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 shadow-refined dark:shadow-none transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
           <div className={results.length === 0 ? 'max-w-2xl' : ''}>
             <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
-            <p className="text-slate-500 dark:text-zinc-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
+            <p className="text-slate-500 dark:text-zinc-400 mt-1">{results.length === 0 ? 'Upload or drop your JavaScript project to detect vulnerabilities instantly.' : `${files.length} files processed. Select one to view issues.`}</p>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-3">
