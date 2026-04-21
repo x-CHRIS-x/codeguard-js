@@ -130,7 +130,7 @@ function App() {
       setLargeProjectWarning(true)
     }
 
-    setFiles(filtered)
+    setFiles(prev => [...prev, ...filtered])
     const scanResults = []
     const allRules = [
       ...injectionRules, ...xssRules, ...authRules,
@@ -139,13 +139,21 @@ function App() {
     ]
 
     for (const file of filtered) {
+      // Prevent duplicates by checking if path/name already exists in current results
+      const filePath = file.webkitRelativePath || file.name
+      if (results.some(r => r.fileName === filePath)) continue
+
       const result = await scanFile(file, allRules)
       scanResults.push(result)
     }
 
-    setResults(scanResults)
+    setResults(prev => {
+      const updated = [...prev, ...scanResults]
+      // If nothing was selected before, select the first new file
+      if (selectedFileIdx === null && updated.length > 0) setSelectedFileIdx(0)
+      return updated
+    })
     setIsScanning(false)
-    if (scanResults.length > 0) setSelectedFileIdx(0)
   }
 
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
