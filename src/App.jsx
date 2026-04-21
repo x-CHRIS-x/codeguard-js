@@ -84,7 +84,6 @@ function App() {
       if (item.isFile) {
         return new Promise((resolve) => {
           item.file((file) => {
-            // Reconstruct the relative path for the scanner
             Object.defineProperty(file, 'webkitRelativePath', {
               value: path + file.name,
               writable: false
@@ -158,19 +157,19 @@ function App() {
 
   return (
     <div 
-      className="min-h-screen bg-neutral-100 transition-colors duration-300 dark:bg-black font-sans text-gray-900 dark:text-gray-100 relative"
+      className="min-h-screen bg-white dark:bg-dark-surface transition-colors duration-300 font-sans text-plum-black dark:text-white relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       {/* Drag Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-[100] bg-red-600/10 backdrop-blur-[2px] border-4 border-dashed border-red-600 m-4 rounded-3xl flex items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-red-500/40">
+        <div className="fixed inset-0 z-[100] bg-pinterest-red/10 backdrop-blur-[2px] border-4 border-dashed border-pinterest-red m-4 rounded-pinterest-xl flex items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 p-8 rounded-pinterest-lg shadow-2xl flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-pinterest-red rounded-pinterest flex items-center justify-center text-white shadow-xl shadow-pinterest-red/40">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
-            <p className="text-xl font-black uppercase tracking-tight">Drop files to scan</p>
+            <p className="text-xl font-bold tracking-tight">Drop files to scan</p>
           </div>
         </div>
       )}
@@ -178,26 +177,21 @@ function App() {
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-warm-silver/20 bg-white/90 dark:bg-dark-surface/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-500/20">
-              <span className="font-black text-sm">CG</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-pinterest bg-pinterest-red text-white shadow-lg shadow-pinterest-red/20">
+              <span className="font-bold text-sm">CG</span>
             </div>
-            <h1 className="text-xl font-extrabold tracking-tight">
-              CodeGuard<span className="text-red-600">JS</span>
+            <h1 className="text-xl font-bold tracking-tight">
+              CodeGuard<span className="text-pinterest-red">JS</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-3">
-            {largeProjectWarning && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg border border-amber-300 dark:border-amber-800 animate-pulse">
-                <span>⚠️ LARGE PROJECT (50+ FILES)</span>
-              </div>
-            )}
             <button 
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+              className="p-2.5 rounded-full bg-warm-light/50 dark:bg-zinc-800 hover:bg-warm-light transition-colors text-plum-black dark:text-gray-400"
               title="Toggle Theme"
             >
               {darkMode ? (
@@ -207,183 +201,191 @@ function App() {
               )}
             </button>
             <button 
-              className="rounded-lg bg-gray-900 dark:bg-zinc-100 px-4 py-2 text-sm font-bold text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-white transition-all disabled:opacity-30" 
+              className="btn-primary disabled:opacity-30" 
               disabled={results.length === 0}
             >
-              Export PDF
+              Export Report
             </button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Simplified Upload */}
-        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
-          <div className={results.length === 0 ? 'max-w-2xl' : ''}>
-            <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{results.length === 0 ? 'Upload or drop your JavaScript project to detect vulnerabilities instantly.' : `${files.length} files processed. Select one to view issues.`}</p>
+        {/* Hero / Upload */}
+        <section className={`mb-12 flex items-center justify-between p-8 card-pinterest ${results.length === 0 ? 'flex-col gap-8 text-center py-20 bg-warm-wash' : 'bg-white'}`}>
+          <div className={results.length === 0 ? 'max-w-3xl' : 'max-w-xl'}>
+            <h2 className={`font-bold tracking-tight ${results.length === 0 ? 'text-5xl mb-4' : 'text-3xl'}`}>
+              {results.length === 0 ? 'Analyze your code locally.' : 'Scan Results'}
+            </h2>
+            <p className="text-olive-gray dark:text-gray-400 text-lg">
+              {results.length === 0 
+                ? 'CodeGuard-JS scans for security vulnerabilities directly in your browser. No code ever leaves your machine.' 
+                : `${files.length} files analyzed. ${stats.totalIssues} vulnerabilities found.`}
+            </p>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-3">
-              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 font-bold text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Select Files</button>
-              <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex gap-4">
+              <button onClick={() => fileInputRef.current.click()} className="btn-secondary">Select Files</button>
+              <button onClick={() => folderInputRef.current.click()} className="btn-primary shadow-xl shadow-pinterest-red/20">Analyze Folder</button>
               {results.length > 0 && (
-                <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); setLargeProjectWarning(false); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
+                <button 
+                  onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); setLargeProjectWarning(false); }} 
+                  className="p-3 bg-sand-gray text-pinterest-red rounded-full hover:bg-warm-light transition-all"
+                  title="Clear Results"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                 </button>
               )}
             </div>
-            {largeProjectWarning && results.length === 0 && (
-              <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest animate-pulse">Large project detected. Scan may be slower.</p>
+            {largeProjectWarning && (
+              <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest animate-pulse">Large project: scan may take longer.</p>
             )}
           </div>
         </section>
 
-        {/* Stats Row */}
-        <section className="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Files', value: files.length, color: 'text-gray-900 dark:text-white' },
-            { label: 'Issues', value: stats.totalIssues, color: stats.totalIssues > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' },
-            { label: 'Critical', value: stats.criticalIssues, color: stats.criticalIssues > 0 ? 'text-red-500' : 'text-gray-900 dark:text-white' },
-            { label: 'Score', value: `${stats.securityScore}%`, color: stats.securityScore > 80 ? 'text-green-500' : stats.securityScore >= 50 ? 'text-orange-500' : 'text-red-500' }
-          ].map((s, i) => (
-            <div key={i} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">{s.label}</span>
-              <span className={`text-2xl font-black ${s.color}`}>{s.value}</span>
-            </div>
-          ))}
-        </section>
-
-        {/* Main Workspace */}
-        <div className="flex flex-col lg:flex-row gap-6 h-[700px]">
-          {/* File Browser */}
-          <div className="w-full lg:w-80 flex flex-col bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
-              <span className="text-xs font-black uppercase tracking-widest text-gray-500">Explorer</span>
-              {isScanning && <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping"></div>}
-            </div>
-            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-              {results.map((res, idx) => (
-                <button 
-                  key={idx} 
-                  onClick={() => setSelectedFileIdx(idx)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group ${selectedFileIdx === idx ? 'bg-gray-100 dark:bg-zinc-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
-                >
-                  <div className={`h-2 w-2 rounded-full shrink-0 ${res.issues.length > 0 ? 'bg-red-500 shadow-sm shadow-red-500/50' : (!res.success || res.hasError) ? 'bg-amber-400' : 'bg-green-500'}`}></div>
-                  <span className={`text-sm truncate flex-1 font-semibold ${selectedFileIdx === idx ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
-                    {res.fileName.split('/').pop()}
-                  </span>
-                  {res.issues.length > 0 && <span className="text-[10px] font-black text-gray-400 group-hover:text-red-400">{res.issues.length}</span>}
-                </button>
+        {results.length > 0 && (
+          <>
+            {/* Stats Grid */}
+            <section className="mb-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Files', value: files.length, color: 'text-plum-black dark:text-white' },
+                { label: 'Total Issues', value: stats.totalIssues, color: stats.totalIssues > 0 ? 'text-pinterest-red' : 'text-plum-black dark:text-white' },
+                { label: 'Critical', value: stats.criticalIssues, color: stats.criticalIssues > 0 ? 'text-red-500' : 'text-plum-black dark:text-white' },
+                { label: 'Security Score', value: `${stats.securityScore}%`, color: stats.securityScore > 80 ? 'text-green-600' : stats.securityScore >= 50 ? 'text-orange-500' : 'text-red-500' }
+              ].map((s, i) => (
+                <div key={i} className="card-pinterest p-6 flex flex-col items-center justify-center bg-white">
+                  <span className="text-xs font-bold uppercase tracking-widest text-olive-gray mb-2">{s.label}</span>
+                  <span className={`text-3xl font-bold ${s.color}`}>{s.value}</span>
+                </div>
               ))}
-              {results.length === 0 && <p className="text-center text-xs text-gray-400 mt-10 italic">No files yet</p>}
-            </div>
-          </div>
+            </section>
 
-          {/* Code & Issue Viewer */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-800/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold truncate max-w-[300px]">{selectedResult?.fileName || 'Viewer'}</span>
-              </div>
-              {selectedResult && selectedResult.issues.length > 0 && <span className="text-[10px] font-black px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-md">VULNERABILITIES DETECTED</span>}
-            </div>
-
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
-              {!selectedResult ? (
-                <div className="h-full flex flex-col items-center justify-center p-10 text-center opacity-40">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                  </div>
-                  <h3 className="font-bold text-lg">No Selection</h3>
-                  <p className="text-sm">Select a scanned file from the explorer to see detailed security analysis.</p>
+            {/* Masonry-inspired Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Sidebar Explorer */}
+              <div className="lg:col-span-3 card-pinterest bg-warm-wash/30 dark:bg-zinc-900 overflow-hidden">
+                <div className="p-5 border-b border-warm-silver/20 bg-white/50">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-olive-gray">File Explorer</h3>
                 </div>
-              ) : !selectedResult.success ? (
-                <div className="h-full flex flex-col items-center justify-center text-amber-500 p-10 text-center">
-                  <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  </div>
-                  <h3 className="text-xl font-black uppercase tracking-tight text-gray-800 dark:text-gray-100">Parse Error</h3>
-                  <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">{selectedResult.error || "This file could not be parsed. It may contain syntax errors or non-standard syntax that prevents a full scan."}</p>
-                </div>
-              ) : selectedResult.issues.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-green-500">
-                  <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  </div>
-                  <h3 className="text-xl font-black">Clean File</h3>
-                  <p className="text-sm text-gray-400 mt-1 font-medium">No known security patterns detected in this file.</p>
-                  {selectedResult.hasError && <p className="text-[10px] text-amber-500 font-bold uppercase mt-4 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg">Partial Scan: Some rules failed to execute</p>}
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {selectedResult.hasError && (
-                    <div className="bg-amber-50 dark:bg-amber-900/10 p-3 flex items-center gap-3 border-b border-amber-100 dark:border-amber-900/30">
-                       <span className="text-amber-500 text-lg">⚠️</span>
-                       <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Partial scan completed. Some rules encountered errors while processing this file.</p>
-                    </div>
-                  )}
-                  {selectedResult.issues.map((issue, i) => (
-                    <div key={i} className="p-6 transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/20">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${issue.severity === 'CRITICAL' ? 'bg-red-600 text-white' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'}`}>
-                              {issue.severity}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{issue.id}</span>
-                          </div>
-                          <h4 className="font-black text-gray-900 dark:text-white text-lg leading-tight">{issue.message}</h4>
-                        </div>
-                        <div className="text-xs font-black text-gray-400 whitespace-nowrap bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full">LINE {issue.line}</div>
-                      </div>
-
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 font-medium leading-relaxed">
-                        {issue.suggestion}
-                      </p>
-
-                      <div className="bg-gray-950 dark:bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl">
-                        <div className="px-4 py-2 bg-gray-900/50 border-b border-gray-800 flex items-center gap-1.5">
-                           <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
-                           <div className="w-2 h-2 rounded-full bg-orange-500/50"></div>
-                           <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
-                        </div>
-                        <div className="p-4 font-mono text-[11px] leading-relaxed overflow-x-auto text-gray-300">
-                          {(() => {
-                            const lines = selectedResult.rawCode?.split('\n') || [];
-                            const target = typeof issue.line === 'number' ? issue.line - 1 : -1;
-                            const start = Math.max(0, target - 1);
-                            const end = Math.min(lines.length - 1, target + 1);
-
-                            return lines.slice(start, end + 1).map((text, idx) => {
-                              const num = start + idx + 1;
-                              const isTarget = num === issue.line;
-                              return (
-                                <div key={idx} className={`flex gap-4 ${isTarget ? 'text-red-400 bg-red-400/10 -mx-4 px-4 font-bold' : 'opacity-40'}`}>
-                                  <span className="w-6 text-right select-none text-gray-600">{num}</span>
-                                  <code className="whitespace-pre">{text || ' '}</code>
-                                </div>
-                              );
-                            });
-                          })()}
-                        </div>
-                      </div>
-                    </div>
+                <div className="max-h-[600px] overflow-y-auto p-3 space-y-1">
+                  {results.map((res, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => setSelectedFileIdx(idx)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-pinterest transition-all text-left group ${selectedFileIdx === idx ? 'bg-white shadow-md' : 'hover:bg-white/50'}`}
+                    >
+                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${res.issues.length > 0 ? 'bg-pinterest-red shadow-sm shadow-pinterest-red/50' : (!res.success || res.hasError) ? 'bg-amber-400' : 'bg-green-500'}`}></div>
+                      <span className={`text-sm truncate flex-1 font-medium ${selectedFileIdx === idx ? 'text-plum-black font-bold' : 'text-olive-gray'}`}>
+                        {res.fileName.split('/').pop()}
+                      </span>
+                      {res.issues.length > 0 && <span className="text-[10px] font-bold text-olive-gray/60 group-hover:text-pinterest-red">{res.issues.length}</span>}
+                    </button>
                   ))}
                 </div>
-              )}
+              </div>
+
+              {/* Content Area */}
+              <div className="lg:col-span-9 space-y-8">
+                {!selectedResult ? (
+                  <div className="card-pinterest p-20 flex flex-col items-center justify-center text-center bg-warm-wash/20">
+                    <div className="w-20 h-20 bg-warm-light rounded-pinterest flex items-center justify-center mb-6 text-olive-gray">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <h3 className="font-bold text-2xl mb-2">Select a file</h3>
+                    <p className="text-olive-gray max-w-sm">Choose a file from the explorer to view detailed security analysis and code snippets.</p>
+                  </div>
+                ) : !selectedResult.success ? (
+                  <div className="card-pinterest p-16 flex flex-col items-center justify-center text-center bg-orange-50/30">
+                    <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-6 text-orange-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-plum-black">Parsing Error</h3>
+                    <p className="text-olive-gray mt-2 max-w-md">{selectedResult.error || "Syntax issues prevented a complete scan of this file."}</p>
+                  </div>
+                ) : selectedResult.issues.length === 0 ? (
+                  <div className="card-pinterest p-20 flex flex-col items-center justify-center text-center bg-green-50/20">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-plum-black">Secure File</h3>
+                    <p className="text-olive-gray mt-2">No security vulnerabilities were detected in this file.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                      <h3 className="text-xl font-bold">{selectedResult.fileName.split('/').pop()}</h3>
+                      <span className="text-xs font-bold px-3 py-1 bg-pinterest-red/10 text-pinterest-red rounded-full">
+                        {selectedResult.issues.length} ISSUES FOUND
+                      </span>
+                    </div>
+                    {selectedResult.issues.map((issue, i) => (
+                      <div key={i} className="card-pinterest p-8 bg-white border-warm-silver/30 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-pinterest ${issue.severity === 'CRITICAL' ? 'bg-pinterest-red text-white' : 'bg-sand-gray text-plum-black'}`}>
+                                {issue.severity}
+                              </span>
+                              <span className="text-[10px] font-bold text-warm-silver uppercase">{issue.id}</span>
+                            </div>
+                            <h4 className="font-bold text-plum-black text-2xl leading-tight">{issue.message}</h4>
+                          </div>
+                          <div className="text-xs font-bold text-olive-gray bg-warm-light/50 px-4 py-1.5 rounded-full">LINE {issue.line}</div>
+                        </div>
+
+                        <p className="text-base text-olive-gray mb-8 leading-relaxed">
+                          {issue.suggestion}
+                        </p>
+
+                        {/* macOS Code Block Style - Preserved as requested */}
+                        <div className="bg-gray-950 dark:bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl">
+                          <div className="px-4 py-2 bg-gray-900/50 border-b border-gray-800 flex items-center gap-1.5">
+                             <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
+                             <div className="w-2 h-2 rounded-full bg-orange-500/50"></div>
+                             <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
+                          </div>
+                          <div className="p-4 font-mono text-[11px] leading-relaxed overflow-x-auto text-gray-300">
+                            {(() => {
+                              const lines = selectedResult.rawCode?.split('\n') || [];
+                              const target = typeof issue.line === 'number' ? issue.line - 1 : -1;
+                              const start = Math.max(0, target - 1);
+                              const end = Math.min(lines.length - 1, target + 1);
+
+                              return lines.slice(start, end + 1).map((text, idx) => {
+                                const num = start + idx + 1;
+                                const isTarget = num === issue.line;
+                                return (
+                                  <div key={idx} className={`flex gap-4 ${isTarget ? 'text-red-400 bg-red-400/10 -mx-4 px-4 font-bold' : 'opacity-40'}`}>
+                                    <span className="w-6 text-right select-none text-gray-600">{num}</span>
+                                    <code className="whitespace-pre">{text || ' '}</code>
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
 
-      <footer className="mt-20 py-12 border-t border-gray-200 dark:border-zinc-800">
+      <footer className="mt-24 py-16 bg-dark-surface text-white">
         <div className="container mx-auto px-4 flex flex-col items-center">
-           <div className="flex items-center gap-2 mb-4">
-              <div className="h-6 w-6 rounded bg-gray-900 dark:bg-zinc-200 flex items-center justify-center text-white dark:text-gray-900 font-bold text-[10px]">CG</div>
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">CodeGuard Protocol</span>
+           <div className="flex items-center gap-3 mb-6">
+              <div className="h-8 w-8 rounded-pinterest bg-pinterest-red flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-pinterest-red/20">CG</div>
+              <span className="text-sm font-bold uppercase tracking-[0.3em] text-warm-silver">CodeGuard JS</span>
            </div>
-           <p className="text-xs text-gray-500 font-medium">v1.0.0-Beta • Local-First Browser Analysis • 2026</p>
+           <p className="text-sm text-warm-silver font-medium text-center max-w-md">
+             A localized static analysis tool for detecting latent security vulnerabilities in web applications.
+           </p>
+           <div className="mt-8 text-[10px] font-bold text-warm-silver/40 uppercase tracking-widest">
+             © 2026 CodeGuard Protocol • v1.0.0-Beta
+           </div>
         </div>
       </footer>
     </div>

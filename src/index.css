@@ -1,4 +1,51 @@
 @import "tailwindcss";
 
-/* Force dark mode to use .dark class instead of system preference */
+@theme {
+  /* Colors from DESIGN.md */
+  --color-pinterest-red: #e60023;
+  --color-plum-black: #211922;
+  --color-olive-gray: #62625b;
+  --color-warm-silver: #91918c;
+  --color-sand-gray: #e5e5e0;
+  --color-warm-light: #e0e0d9;
+  --color-warm-wash: hsla(60, 20%, 98%, 0.5);
+  --color-pressed-blue: #617bff;
+  --color-facebook-blue: #0866ff;
+  --color-dark-surface: #33332e;
+  
+  /* Radii */
+  --radius-pinterest: 16px;
+  --radius-pinterest-lg: 20px;
+  --radius-pinterest-xl: 28px;
+  --radius-pinterest-hero: 40px;
+
+  /* Font */
+  --font-sans: "Pin Sans", -apple-system, system-ui, Segoe UI, Roboto, Oxygen-Sans, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "ヒラギノ角ゴ Pro W3", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", Arial, sans-serif;
+}
+
+/* Force dark mode to use .dark class */
 @variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-white text-plum-black antialiased transition-colors duration-200;
+  }
+  
+  .dark body {
+    @apply bg-dark-surface text-white;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-pinterest-red text-white px-4 py-2 rounded-pinterest font-medium hover:opacity-90 active:scale-95 transition-all;
+  }
+  
+  .btn-secondary {
+    @apply bg-sand-gray text-plum-black px-4 py-2 rounded-pinterest font-medium hover:bg-warm-light active:scale-95 transition-all;
+  }
+  
+  .card-pinterest {
+    @apply bg-white dark:bg-black/20 rounded-pinterest-lg border border-warm-silver/20 transition-all;
+  }
+}
