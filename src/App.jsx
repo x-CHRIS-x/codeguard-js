@@ -86,7 +86,7 @@ function App() {
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
   return (
-    <div className="min-h-screen bg-white transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-eleven-light-gray transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" accept=".js,.jsx,.ts,.tsx" />
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
