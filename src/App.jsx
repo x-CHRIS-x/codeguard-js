@@ -7,12 +7,14 @@ import { sensitiveDataRules } from './scanner/rules/sensitiveData'
 import { misconfigRules } from './scanner/rules/misconfig'
 import { deserializationRules } from './scanner/rules/deserialization'
 import { knownVulnsRules } from './scanner/rules/knownVulns'
+import { generatePDFReport } from './utils/pdfGenerator'
 import './App.css'
 
 function App() {
   const [files, setFiles] = useState([])
   const [results, setResults] = useState([])
   const [isScanning, setIsScanning] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [selectedFileIdx, setSelectedFileIdx] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
   const [largeProjectWarning, setLargeProjectWarning] = useState(false)
@@ -209,10 +211,25 @@ function App() {
               )}
             </button>
             <button 
-              className="rounded-lg bg-slate-900 dark:bg-zinc-100 px-4 py-2 text-sm font-bold text-white dark:text-zinc-900 hover:opacity-90 transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed" 
-              disabled={results.length === 0}
+              className="rounded-lg bg-slate-900 dark:bg-zinc-100 px-4 py-2 text-sm font-bold text-white dark:text-zinc-900 hover:opacity-90 transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed flex items-center gap-2" 
+              disabled={results.length === 0 || isExporting}
+              onClick={async () => {
+                setIsExporting(true);
+                // Give UI time to show loading state
+                setTimeout(() => {
+                  generatePDFReport(results, stats);
+                  setIsExporting(false);
+                }, 100);
+              }}
             >
-              Export PDF
+              {isExporting ? (
+                <>
+                  <div className="h-3 w-3 border-2 border-white/30 border-t-white dark:border-zinc-900/30 dark:border-t-zinc-900 rounded-full animate-spin"></div>
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                'Export PDF'
+              )}
             </button>
           </div>
         </div>
