@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors from DESIGN.md */
-  --color-pinterest-red: #e60023;
-  --color-plum-black: #211922;
-  --color-olive-gray: #62625b;
-  --color-warm-silver: #91918c;
-  --color-sand-gray: #e5e5e0;
-  --color-warm-light: #e0e0d9;
-  --color-warm-wash: hsla(60, 20%, 98%, 0.5);
-  --color-pressed-blue: #617bff;
-  --color-facebook-blue: #0866ff;
-  --color-dark-surface: #33332e;
-  
-  /* Radii */
-  --radius-pinterest: 16px;
-  --radius-pinterest-lg: 20px;
-  --radius-pinterest-xl: 28px;
-  --radius-pinterest-hero: 40px;
+  /* Colors from DESIGN.md (ElevenLabs) */
+  --color-eleven-white: #ffffff;
+  --color-eleven-light-gray: #f5f5f5;
+  --color-warm-stone: rgba(245, 242, 239, 0.8);
+  --color-eleven-black: #000000;
+  --color-dark-gray: #4e4e4e;
+  --color-warm-gray: #777169;
+  --color-eleven-border: #e5e5e5;
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
 
-  /* Font */
-  --font-sans: "Pin Sans", -apple-system, system-ui, Segoe UI, Roboto, Oxygen-Sans, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "ヒラギノ角ゴ Pro W3", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", Arial, sans-serif;
+  /* Font Families */
+  --font-display: "Waldenburg", "Waldenburg Fallback", sans-serif;
+  --font-display-bold: "WaldenburgFH", "WaldenburgFH Fallback", sans-serif;
+  --font-sans: "Inter", "Inter Fallback", -apple-system, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Shadow Stacks */
+  --shadow-eleven-card: rgba(0, 0, 0, 0.06) 0px 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 1px 2px, rgba(0, 0, 0, 0.04) 0px 2px 4px;
+  --shadow-eleven-button: rgba(0, 0, 0, 0.4) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 4px;
+  --shadow-warm-lift: rgba(78, 50, 23, 0.04) 0px 6px 16px;
+  --shadow-inset-edge: rgba(0, 0, 0, 0.075) 0px 0px 0px 0.5px inset;
+
+  /* Radius Scale */
+  --radius-eleven-sm: 8px;
+  --radius-eleven-md: 12px;
+  --radius-eleven-lg: 16px;
+  --radius-eleven-xl: 24px;
+  --radius-eleven-warm: 30px;
+  --radius-pill: 9999px;
 }
 
 /* Force dark mode to use .dark class */
@@ -28,24 +37,36 @@
 
 @layer base {
   body {
-    @apply bg-white text-plum-black antialiased transition-colors duration-200;
+    @apply bg-eleven-white text-eleven-black antialiased transition-colors duration-200;
   }
   
   .dark body {
-    @apply bg-dark-surface text-white;
+    @apply bg-[#0a0a0a] text-eleven-light-gray;
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply bg-pinterest-red text-white px-4 py-2 rounded-pinterest font-medium hover:opacity-90 active:scale-95 transition-all;
+  .btn-pill-black {
+    @apply bg-eleven-black text-white px-5 py-2.5 rounded-pill font-medium hover:opacity-90 active:scale-95 transition-all flex items-center justify-center;
   }
   
-  .btn-secondary {
-    @apply bg-sand-gray text-plum-black px-4 py-2 rounded-pinterest font-medium hover:bg-warm-light active:scale-95 transition-all;
+  .btn-pill-white {
+    @apply bg-white text-eleven-black px-5 py-2.5 rounded-pill font-medium shadow-eleven-button hover:bg-eleven-light-gray active:scale-95 transition-all flex items-center justify-center border border-eleven-border/50;
+  }
+
+  .btn-warm-stone {
+    @apply bg-warm-stone text-eleven-black px-6 py-3 rounded-eleven-warm font-medium shadow-warm-lift hover:bg-[#f5f2ef] active:scale-95 transition-all flex items-center justify-center;
   }
   
-  .card-pinterest {
-    @apply bg-white dark:bg-black/20 rounded-pinterest-lg border border-warm-silver/20 transition-all;
+  .card-eleven {
+    @apply bg-white dark:bg-zinc-900 rounded-eleven-lg shadow-eleven-card border border-eleven-border/10 transition-all;
+  }
+
+  .display-hero {
+    @apply font-display font-[300] text-[48px] leading-[1.08] tracking-[-0.96px];
+  }
+
+  .body-text {
+    @apply font-sans font-[400] text-[18px] leading-[1.60] tracking-[0.18px];
   }
 }
