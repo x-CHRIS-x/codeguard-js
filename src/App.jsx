@@ -86,12 +86,12 @@ function App() {
   const selectedResult = selectedFileIdx !== null ? results[selectedFileIdx] : null
 
   return (
-    <div className="min-h-screen bg-slate-50 transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-white transition-colors duration-300 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" accept=".js,.jsx,.ts,.tsx" />
       <input type="file" ref={folderInputRef} onChange={handleFileUpload} webkitdirectory="true" directory="true" className="hidden" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-300 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-500/20">
@@ -131,14 +131,14 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Simplified Upload */}
-        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
+        <section className={`mb-8 flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shadow-sm transition-all ${results.length === 0 ? 'flex-col gap-6 text-center py-16' : ''}`}>
           <div className={results.length === 0 ? 'max-w-2xl' : ''}>
             <h2 className="text-2xl font-black tracking-tight">{results.length === 0 ? 'Start Local Security Scan' : 'Project Analysis'}</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">{results.length === 0 ? 'Upload your JavaScript project to detect vulnerabilities instantly without leaving your browser.' : `${files.length} files processed. Select one to view issues.`}</p>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-3">
-              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
+              <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Select Files</button>
               <button onClick={() => folderInputRef.current.click()} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-shadow shadow-lg shadow-red-500/20">Analyze Folder</button>
               {results.length > 0 && (
                 <button onClick={() => { setResults([]); setFiles([]); setSelectedFileIdx(null); setLargeProjectWarning(false); }} className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Clear All">
@@ -160,7 +160,7 @@ function App() {
             { label: 'Critical', value: stats.criticalIssues, color: stats.criticalIssues > 0 ? 'text-red-500' : 'text-slate-900 dark:text-white' },
             { label: 'Score', value: `${stats.securityScore}%`, color: stats.securityScore > 80 ? 'text-green-500' : 'text-orange-500' }
           ].map((s, i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
+            <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{s.label}</span>
               <span className={`text-2xl font-black ${s.color}`}>{s.value}</span>
             </div>
@@ -170,8 +170,8 @@ function App() {
         {/* Main Workspace */}
         <div className="flex flex-col lg:flex-row gap-6 h-[700px]">
           {/* File Browser */}
-          <div className="w-full lg:w-80 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+          <div className="w-full lg:w-80 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
               <span className="text-xs font-black uppercase tracking-widest text-slate-500">Explorer</span>
               {isScanning && <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping"></div>}
             </div>
@@ -194,8 +194,8 @@ function App() {
           </div>
 
           {/* Code & Issue Viewer */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">
+          <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold truncate max-w-[300px]">{selectedResult?.fileName || 'Viewer'}</span>
               </div>
@@ -290,7 +290,7 @@ function App() {
         </div>
       </main>
 
-      <footer className="mt-20 py-12 border-t border-slate-200 dark:border-slate-800">
+      <footer className="mt-20 py-12 border-t border-slate-300 dark:border-slate-800">
         <div className="container mx-auto px-4 flex flex-col items-center">
            <div className="flex items-center gap-2 mb-4">
               <div className="h-6 w-6 rounded bg-slate-900 dark:bg-slate-200 flex items-center justify-center text-white dark:text-slate-900 font-bold text-[10px]">CG</div>
