@@ -1,6 +1,6 @@
 # Project Title
 
-CodeGuard-JS: A Localized Static Analysis Tool for Detecting Latent Security Vulnerabilities for Web Developers
+JSentinel: A Localized Static Analysis Tool for Detecting Latent Security Vulnerabilities for Web Developers
 
 
 ## What it is
@@ -145,4 +145,4 @@ Score display: green if > 80, orange if 50–80, red if below 50.
 The weighted penalty scoring is inspired by CVSS v3.1 severity band definitions (FIRST, 2019) and the OWASP Risk Rating Methodology's recommendation to weight factors rather than treating all findings equally (OWASP, 2021).
 
 ## Problem framing for the paper
-Vulnerabilities in student code come from multiple causes: lack of security knowledge, forgetting best practices, AI-assisted vibe coding, copying insecure tutorials, time pressure, and overconfidence. CodeGuard-JS addresses all of these regardless of cause.
+Vulnerabilities in student code come from multiple causes: lack of security knowledge, forgetting best practices, AI-assisted vibe coding, copying insecure tutorials, time pressure, and overconfidence. JSentinel addresses all of these regardless of cause.

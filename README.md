@@ -1,6 +1,6 @@
-# CodeGuard-JS
+# JSentinel
 
-CodeGuard-JS is a localized static analysis tool designed for web developers to detect latent security vulnerabilities in JavaScript code. It operates entirely within the browser, ensuring that no code is ever sent to a server, providing maximum privacy and security.
+JSentinel is a localized static analysis tool designed for web developers to detect latent security vulnerabilities in JavaScript code. It operates entirely within the browser, ensuring that no code is ever sent to a server, providing maximum privacy and security.
 
 ## Features
 
@@ -32,7 +32,7 @@ CodeGuard-JS is a localized static analysis tool designed for web developers to 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/x-CHRIS-x/codeguard-js.git
+   git clone https://github.com/x-CHRIS-x/jsentinel.git
    ```
 2. Install dependencies:
    ```bash
