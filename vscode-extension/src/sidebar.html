@@ -2082,7 +2082,7 @@
       }
 
       // Action 1: Why this was flagged
-      detailsContainer.appendChild(createDetailSection('flagged', 'Why this was flagged', function(el) {
+      detailsContainer.appendChild(createDetailSection('flagged', '1. Why this was flagged', function(el) {
         const pRisk = document.createElement('p');
         pRisk.className = 'guidance-text';
         pRisk.textContent = guidance.risk || 'Review the flagged pattern for potential security impact.';
@@ -2090,7 +2090,7 @@
       }));
 
       // Action 2: Choose an approach
-      detailsContainer.appendChild(createDetailSection('approach', 'Choose an approach', function(el) {
+      detailsContainer.appendChild(createDetailSection('approach', '2. Choose an approach', function(el) {
         if (guidance.approaches && Array.isArray(guidance.approaches) && guidance.approaches.length > 0) {
           const ul = document.createElement('ul');
           ul.className = 'guidance-list';
@@ -2127,7 +2127,7 @@
       }));
 
       // Action 3: How to test
-      detailsContainer.appendChild(createDetailSection('test', 'How to test', function(el) {
+      detailsContainer.appendChild(createDetailSection('test', '3. How to test', function(el) {
         if (guidance.verifySteps && Array.isArray(guidance.verifySteps) && guidance.verifySteps.length > 0) {
           const ulVerify = document.createElement('ul');
           ulVerify.className = 'verify-list';
@@ -2149,7 +2149,7 @@
       }));
 
       // Action 4: Example structure
-      detailsContainer.appendChild(createDetailSection('example', 'Example structure', function(el) {
+      detailsContainer.appendChild(createDetailSection('example', '4. Example structure', function(el) {
         // Why there isn't one exact fix (plain language, non-blocker)
         const cannotBox = document.createElement('div');
         cannotBox.className = 'cannot-infer-box';

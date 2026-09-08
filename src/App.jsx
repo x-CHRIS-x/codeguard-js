@@ -1453,7 +1453,7 @@ function App() {
                                             className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
                                           >
                                             <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
-                                              Why this was flagged
+                                              1. Why this was flagged
                                             </span>
                                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
                                               {isFlaggedExpanded ? '▴' : '▾'}
@@ -1476,7 +1476,7 @@ function App() {
                                             className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
                                           >
                                             <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
-                                              Choose an approach
+                                              2. Choose an approach
                                             </span>
                                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
                                               {isApproachExpanded ? '▴' : '▾'}
@@ -1534,7 +1534,7 @@ function App() {
                                             className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
                                           >
                                             <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
-                                              How to test
+                                              3. How to test
                                             </span>
                                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
                                               {isTestExpanded ? '▴' : '▾'}
@@ -1564,7 +1564,7 @@ function App() {
                                             className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
                                           >
                                             <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
-                                              Example structure
+                                              4. Example structure
                                             </span>
                                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
                                               {isExampleExpanded ? '▴' : '▾'}
