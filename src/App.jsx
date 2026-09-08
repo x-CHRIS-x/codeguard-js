@@ -11,7 +11,7 @@ import { accessControlRules } from './scanner/rules/accessControl';
 import { ssrfRules } from './scanner/rules/ssrf';
 import { generatePDFReport } from './utils/pdfGenerator';
 import { generateJSONReport } from './utils/jsonExporter';
-import { getGuidance, GUIDANCE_DISCLAIMER } from './data/guidanceCatalog';
+import { getGuidance, FALLBACK_GUIDANCE, GUIDANCE_DISCLAIMER } from './data/guidanceCatalog';
 import './App.css';
 
 // Safely parse fpKey with full support for Windows drive letters and colons in file paths
@@ -1299,6 +1299,7 @@ function App() {
                             const fpKey = `${selectedResult.fileName}:${issue.id}:${issue.line}:${issue.column}`;
                             const isFP = fpFlags.includes(fpKey);
                             const isSelected = selectedIssueIdx === originalIdx;
+                            const guidance = getGuidance(issue);
 
                             return (
                               <div 
@@ -1340,9 +1341,11 @@ function App() {
                                   {issue.message}
                                 </h4>
                                 
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                                  {issue.suggestion}
-                                </p>
+                                {!isSelected && (
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+                                    {guidance === FALLBACK_GUIDANCE ? issue.suggestion : guidance.shortAction}
+                                  </p>
+                                )}
 
                                 {/* Justification Context Input (when selected for FP) */}
                                 {!isFP && isSelected && (
@@ -1388,7 +1391,6 @@ function App() {
 
                                 {/* Action-First Compact Guidance Panel */}
                                 {isSelected && (() => {
-                                  const guidance = getGuidance(issue);
                                   const detectedLine = issue.sourceLine || (selectedResult?.rawCode ? selectedResult.rawCode.split('\n')[issue.line - 1] : null);
                                   const isFlaggedExpanded = expandedGuidanceSections.has(`${fpKey}:flagged`);
                                   const isApproachExpanded = expandedGuidanceSections.has(`${fpKey}:approach`);
@@ -1417,7 +1419,7 @@ function App() {
                                         )}
                                       </div>
 
-                                      {/* 2. Suggested next step (Visual Priority) & 3. Context indicator */}
+                                      {/* Suggested action and its applicability stay visible together. */}
                                       <div className="p-2.5 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40 space-y-1.5">
                                         <div className="flex items-center justify-between gap-1.5 flex-wrap">
                                           <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block">
@@ -1426,16 +1428,14 @@ function App() {
                                           <div className="flex items-center gap-1.5 flex-wrap">
                                             {guidance.scope && (
                                               <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                                                {guidance.scope === 'browser' ? 'Browser Scope' : guidance.scope === 'server' ? 'Server Scope' : 'Cross-Boundary Scope'}
-                                              </span>
-                                            )}
-                                            {guidance.scope === 'cross-boundary' && (
-                                              <span className="text-[8px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60">
-                                                Requires project context
+                                                Remediation scope: {guidance.scope === 'browser' ? 'Browser' : guidance.scope === 'server' ? 'Server' : 'Multiple layers'}
                                               </span>
                                             )}
                                           </div>
                                         </div>
+                                        <p className="text-[10.5px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                                          <strong>Check first:</strong> {guidance.contextCheck}
+                                        </p>
                                         <p className="text-[11.5px] font-bold text-slate-900 dark:text-zinc-100 leading-snug">
                                           {guidance.shortAction || guidance.recommendedAction}
                                         </p>
@@ -1462,6 +1462,9 @@ function App() {
                                           {isFlaggedExpanded && (
                                             <div id={`guidance-panel-${fpKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-flagged`} className="px-3 pb-2.5 pt-1 border-t border-slate-200/50 dark:border-zinc-800/50 text-[11px] text-slate-700 dark:text-zinc-300 leading-relaxed animate-reveal">
                                               <p>{guidance.risk}</p>
+                                              <p className="mt-2 text-slate-500 dark:text-zinc-400">
+                                                <strong>What JSentinel cannot determine:</strong> {guidance.cannotInfer}
+                                              </p>
                                             </div>
                                           )}
                                         </div>
@@ -1554,62 +1557,41 @@ function App() {
                                           )}
                                         </div>
 
-                                        {/* Action 4: Example structure */}
-                                        <div className="rounded-lg border border-slate-200/70 dark:border-zinc-800/80 overflow-hidden bg-slate-50/50 dark:bg-zinc-900/30">
-                                          <button
-                                            type="button"
-                                            onClick={() => toggleGuidanceSection(fpKey, 'example')}
-                                            aria-expanded={isExampleExpanded}
-                                            aria-controls={`guidance-panel-${fpKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-example`}
-                                            className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
-                                          >
-                                            <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
-                                              4. Example structure
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
-                                              {isExampleExpanded ? '▴' : '▾'}
-                                            </span>
-                                          </button>
-                                          {isExampleExpanded && (
-                                            <div id={`guidance-panel-${fpKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-example`} className="px-3 pb-2.5 pt-2 border-t border-slate-200/50 dark:border-zinc-800/50 space-y-2 animate-reveal">
-                                              {/* Why there isn't one exact fix (plain language, non-blocker) */}
-                                              <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-zinc-800/50 border border-slate-200/70 dark:border-zinc-700/50 space-y-1">
-                                                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                                                  <svg className="w-3 h-3 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                                    <circle cx="12" cy="12" r="10" />
-                                                    <line x1="12" y1="16" x2="12" y2="12" />
-                                                    <line x1="12" y1="8" x2="12.01" y2="8" />
-                                                  </svg>
-                                                  Why there isn't one exact fix
-                                                </span>
-                                                <p className="text-[10.5px] text-slate-600 dark:text-zinc-300 leading-relaxed">
-                                                  {guidance.cannotInfer}
-                                                </p>
-                                              </div>
-
-                                              {/* Illustrative pattern */}
-                                              {(() => {
-                                                const patternContent = guidance.illustrativePattern || '// Conceptual pattern: consult architectural guidelines and project security standards for safe implementation.';
-                                                return (
-                                                  <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
-                                                      Illustrative pattern: adapt this to your project
-                                                    </span>
-                                                    <div className="p-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-zinc-950 font-mono text-[10px] overflow-x-auto border border-slate-700/50 dark:border-zinc-800">
-                                                      <code className="whitespace-pre-wrap break-all">{patternContent}</code>
-                                                    </div>
+                                        {/* Examples appear only where their assumptions can be stated clearly. */}
+                                        {typeof guidance.illustrativePattern === 'string' && guidance.illustrativePattern.trim() && (
+                                          <div className="rounded-lg border border-slate-200/70 dark:border-zinc-800/80 overflow-hidden bg-slate-50/50 dark:bg-zinc-900/30">
+                                            <button
+                                              type="button"
+                                              onClick={() => toggleGuidanceSection(fpKey, 'example')}
+                                              aria-expanded={isExampleExpanded}
+                                              aria-controls={`guidance-panel-${fpKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-example`}
+                                              className="w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100/70 dark:hover:bg-zinc-800/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-colors cursor-pointer"
+                                            >
+                                              <span className="text-[10.5px] font-semibold text-slate-700 dark:text-zinc-300">
+                                                4. Example
+                                              </span>
+                                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
+                                                {isExampleExpanded ? '▴' : '▾'}
+                                              </span>
+                                            </button>
+                                            {isExampleExpanded && (
+                                              <div id={`guidance-panel-${fpKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-example`} className="px-3 pb-2.5 pt-2 border-t border-slate-200/50 dark:border-zinc-800/50 space-y-2 animate-reveal">
+                                                <div className="space-y-1">
+                                                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                                    Example for the stated condition
+                                                  </span>
+                                                  <div className="p-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-zinc-950 font-mono text-[10px] overflow-x-auto border border-slate-700/50 dark:border-zinc-800">
+                                                    <code className="whitespace-pre-wrap break-all">{guidance.illustrativePattern}</code>
                                                   </div>
-                                                );
-                                              })()}
-
-                                              {/* Educational Disclaimer */}
-                                              <div className="p-2 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100/80 dark:border-indigo-900/40 text-[9px] text-indigo-700 dark:text-indigo-300 italic leading-snug">
-                                                {GUIDANCE_DISCLAIMER}
+                                                </div>
                                               </div>
-                                            </div>
-                                          )}
+                                            )}
                                         </div>
+                                        )}
                                       </div>
+                                      <p className="text-[9px] text-slate-500 dark:text-zinc-400 italic leading-snug">
+                                        {GUIDANCE_DISCLAIMER}
+                                      </p>
                                     </div>
                                   );
                                 })()}

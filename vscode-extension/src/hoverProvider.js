@@ -6,18 +6,13 @@
  * everything into a single diagnostic message string, this provider renders
  * structured, readable cards with clear visual hierarchy.
  * 
- * Each card includes:
- *   - Severity badge with emoji indicator
- *   - OWASP category identification
- *   - Confidence level indicator
- *   - CVSS v3.1 base score and vector
- *   - What the vulnerability is and why it is dangerous
- *   - How to fix it
- *   - Link to OWASP documentation
+ * Each card gives the context to check, a conditional next step, the risk,
+ * and verification steps. Full guidance remains available in the sidebar.
+ * Severity, location, OWASP category, confidence, and CVSS remain visible.
  */
 
 const vscode = require('vscode');
-const { getGuidance, GUIDANCE_DISCLAIMER } = require('./data/guidanceCatalog');
+const { getGuidance, FALLBACK_GUIDANCE, GUIDANCE_DISCLAIMER } = require('./data/guidanceCatalog');
 
 // ──────────────────────────────────────────────
 // OWASP Category Metadata
@@ -83,8 +78,7 @@ const buildHoverCard = (issue) => {
   const categoryPrefix = getCategoryPrefix(issue.id);
   const category = categoryPrefix ? owaspCategories[categoryPrefix] : null;
   const guidance = getGuidance(issue);
-  const scopeLabel = guidance.scope === 'browser' ? 'Browser Scope' : guidance.scope === 'server' ? 'Server Scope' : 'Cross-Boundary Scope';
-  const contextNote = guidance.scope === 'cross-boundary' ? ' | **Context:** `Requires project context`' : '';
+  const scopeLabel = guidance.scope === 'browser' ? 'Browser' : guidance.scope === 'server' ? 'Server' : 'Multiple layers';
 
   const lines = [];
 
@@ -92,9 +86,11 @@ const buildHoverCard = (issue) => {
   lines.push(`## ${severity.emoji} ${severity.label}: \`${issue.id}\` - ${guidance.title}`);
   lines.push('');
 
-  // ── OWASP Category & Scope ──
+  // ── Location, OWASP Category & Remediation Scope ──
+  lines.push(`**Line:** ${issue.line} | **Remediation scope:** \`${scopeLabel}\``);
+  lines.push('');
   if (category) {
-    lines.push(`${category.icon} **OWASP Category:** [${category.name}](${category.url}) | **Scope:** \`${scopeLabel}\`${contextNote}`);
+    lines.push(`${category.icon} **OWASP Category:** [${category.name}](${category.url})`);
     lines.push('');
   }
 
@@ -105,16 +101,9 @@ const buildHoverCard = (issue) => {
   // ── Suggested Next Step (Visual Priority) ──
   lines.push('### 💡 Suggested Next Step');
   lines.push('');
-  lines.push(`**${guidance.shortAction || guidance.recommendedAction}**`);
+  lines.push(`**Check first:** ${guidance.contextCheck || FALLBACK_GUIDANCE.contextCheck}`);
   lines.push('');
-  if (issue.sourceLine) {
-    lines.push(`**Detected code (Line ${issue.line}):**`);
-    lines.push('```javascript');
-    lines.push(issue.sourceLine);
-    lines.push('```');
-  } else {
-    lines.push(`*Detected (Line ${issue.line}):* ${issue.message}`);
-  }
+  lines.push(`**${guidance.shortAction || guidance.recommendedAction}**`);
   lines.push('');
 
   // ── Why This Was Flagged ──
@@ -122,27 +111,6 @@ const buildHoverCard = (issue) => {
   lines.push('');
   lines.push(guidance.risk);
   lines.push('');
-
-  // ── Choose an Approach ──
-  if (guidance.approaches && Array.isArray(guidance.approaches) && guidance.approaches.length > 0) {
-    lines.push('### 🛠️ Choose an Approach');
-    lines.push('');
-    guidance.approaches.forEach(appr => {
-      if (typeof appr === 'string') {
-        const colonIdx = appr.indexOf(':');
-        if (colonIdx !== -1) {
-          const title = appr.slice(0, colonIdx);
-          const desc = appr.slice(colonIdx + 1).trim();
-          lines.push(`- **${title}:** ${desc}`);
-        } else {
-          lines.push(`- ${appr}`);
-        }
-      } else if (typeof appr === 'object' && appr !== null) {
-        lines.push(`- **${appr.title}:** ${appr.description}`);
-      }
-    });
-    lines.push('');
-  }
 
   // ── How to Test ──
   if (guidance.verifySteps && Array.isArray(guidance.verifySteps) && guidance.verifySteps.length > 0) {
@@ -154,16 +122,7 @@ const buildHoverCard = (issue) => {
     lines.push('');
   }
 
-  // ── Example Structure ──
-  lines.push('### 📋 Example Structure');
-  lines.push('');
-  lines.push(`**Why there isn't one exact fix:** ${guidance.cannotInfer}`);
-  lines.push('');
-  const patternText = guidance.illustrativePattern || '// Conceptual pattern: consult architectural guidelines and project security standards for safe implementation.';
-  lines.push('**Illustrative pattern: adapt this to your project**');
-  lines.push('```javascript');
-  lines.push(patternText);
-  lines.push('```');
+  lines.push('Open the JSentinel sidebar for approaches, analyzer limitations, and available examples.');
   lines.push('');
 
   // ── Mandatory Educational Disclaimer ──

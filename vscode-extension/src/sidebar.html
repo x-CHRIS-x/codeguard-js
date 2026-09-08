@@ -886,15 +886,6 @@
       gap: 5px;
       flex-wrap: wrap;
     }
-    .context-pill {
-      font-size: 9px;
-      font-weight: 500;
-      padding: 1px 5px;
-      border-radius: 4px;
-      background: rgba(128, 128, 128, 0.12);
-      color: var(--vscode-descriptionForeground);
-      border: 1px solid var(--card-border);
-    }
     .guidance-next-step-text {
       font-size: 11.5px;
       font-weight: 700;
@@ -1264,33 +1255,27 @@
 
     // Dictionaries passed from extension backend
     const guidanceCatalog = __GUIDANCE_CATALOG_JSON__;
+    const fallbackGuidance = __FALLBACK_GUIDANCE_JSON__;
     const guidanceDisclaimer = __DISCLAIMER_JSON__;
     const owaspCategories = __OWASP_JSON__;
 
     function getGuidanceForIssue(issue) {
-      const key = (issue && (issue.guidanceId || issue.id)) || '';
-      if (key && Object.prototype.hasOwnProperty.call(guidanceCatalog, key)) return guidanceCatalog[key];
-      if (issue && issue.id && Object.prototype.hasOwnProperty.call(guidanceCatalog, issue.id)) return guidanceCatalog[issue.id];
-      return {
-        guidanceId: issue ? (issue.guidanceId || issue.id || 'UNKNOWN') : 'UNKNOWN',
-        ruleId: issue ? (issue.id || 'UNKNOWN') : 'UNKNOWN',
-        title: 'Security Review Recommendation',
-        category: 'General Security Practice',
-        recommendedAction: 'Review the flagged code against project security requirements.',
-        shortAction: 'Review the flagged code against project security requirements.',
-        risk: 'Static analysis flagged an unclassified code pattern that may warrant security review.',
-        cannotInfer: 'JSentinel cannot determine application intent, runtime context, or environmental security controls.',
-        scope: 'cross-boundary',
-        approaches: [
-          'Architecture Review: Review code behavior with development and security team members to ensure safe handling.',
-          'Defensive Controls: Apply least-privilege principles and input validation tailored to the application architecture.'
-        ],
-        verifySteps: [
-          'Verify that the flagged pattern adheres to application security policies.',
-          'Test edge cases and unexpected inputs in automated test suites.'
-        ],
-        illustrativePattern: '// Review flagged code pattern and apply safe coding practices suited to your architecture'
-      };
+      function findRecord(id) {
+        if (typeof id !== 'string' || !id.trim()) return null;
+        const trimmedId = id.trim();
+        for (const key of [trimmedId, trimmedId.split(':')[0].trim()]) {
+          if (!Object.prototype.hasOwnProperty.call(guidanceCatalog, key)) continue;
+          const record = guidanceCatalog[key];
+          if (record && typeof record === 'object' && record.guidanceId === key) return record;
+        }
+        return null;
+      }
+
+      if (typeof issue === 'string') return findRecord(issue) || fallbackGuidance;
+      if (issue && typeof issue === 'object') {
+        return findRecord(issue.guidanceId) || findRecord(issue.id) || fallbackGuidance;
+      }
+      return fallbackGuidance;
     }
 
     // Client state
@@ -1979,7 +1964,7 @@
       }
       container.appendChild(sec1);
 
-      // 2. Suggested next step & 3. Context indicator (Visual Priority)
+      // 2. Suggested next step and the project context to check first
       const nextStepBox = document.createElement('div');
       nextStepBox.className = 'guidance-next-step-box';
 
@@ -1997,18 +1982,17 @@
       if (guidance.scope) {
         const scopeBadge = document.createElement('span');
         scopeBadge.className = 'scope-badge';
-        scopeBadge.textContent = guidance.scope === 'browser' ? 'Browser Scope' : guidance.scope === 'server' ? 'Server Scope' : 'Cross-Boundary Scope';
+        scopeBadge.textContent = 'Remediation scope: ' + (guidance.scope === 'browser' ? 'Browser' : guidance.scope === 'server' ? 'Server' : 'Multiple layers');
         badgesRow.appendChild(scopeBadge);
       }
 
-      if (guidance.scope === 'cross-boundary') {
-        const contextPill = document.createElement('span');
-        contextPill.className = 'context-pill';
-        contextPill.textContent = 'Requires project context';
-        badgesRow.appendChild(contextPill);
-      }
       nextStepHeader.appendChild(badgesRow);
       nextStepBox.appendChild(nextStepHeader);
+
+      const pContext = document.createElement('p');
+      pContext.className = 'guidance-text';
+      pContext.textContent = 'Check first: ' + (guidance.contextCheck || fallbackGuidance.contextCheck);
+      nextStepBox.appendChild(pContext);
 
       const pNextStep = document.createElement('p');
       pNextStep.className = 'guidance-next-step-text';
@@ -2087,6 +2071,18 @@
         pRisk.className = 'guidance-text';
         pRisk.textContent = guidance.risk || 'Review the flagged pattern for potential security impact.';
         el.appendChild(pRisk);
+
+        const cannotBox = document.createElement('div');
+        cannotBox.className = 'cannot-infer-box';
+        const cannotLabel = document.createElement('span');
+        cannotLabel.className = 'cannot-infer-label';
+        cannotLabel.textContent = 'What JSentinel cannot determine';
+        cannotBox.appendChild(cannotLabel);
+        const pCannot = document.createElement('p');
+        pCannot.className = 'cannot-infer-text';
+        pCannot.textContent = guidance.cannotInfer || fallbackGuidance.cannotInfer;
+        cannotBox.appendChild(pCannot);
+        el.appendChild(cannotBox);
       }));
 
       // Action 2: Choose an approach
@@ -2148,54 +2144,40 @@
         }
       }));
 
-      // Action 4: Example structure
-      detailsContainer.appendChild(createDetailSection('example', '4. Example structure', function(el) {
-        // Why there isn't one exact fix (plain language, non-blocker)
-        const cannotBox = document.createElement('div');
-        cannotBox.className = 'cannot-infer-box';
-        const cannotLabel = document.createElement('span');
-        cannotLabel.className = 'cannot-infer-label';
-        cannotLabel.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Why there isn\'t one exact fix</span>';
-        cannotBox.appendChild(cannotLabel);
-        const pCannot = document.createElement('p');
-        pCannot.className = 'cannot-infer-text';
-        pCannot.textContent = guidance.cannotInfer || 'JSentinel cannot determine application intent, runtime context, or environmental controls.';
-        cannotBox.appendChild(pCannot);
-        el.appendChild(cannotBox);
+      // Action 4: Include an example only when the catalog provides one.
+      if (typeof guidance.illustrativePattern === 'string' && guidance.illustrativePattern.trim()) {
+        detailsContainer.appendChild(createDetailSection('example', '4. Example', function(el) {
+          const patternGroup = document.createElement('div');
+          patternGroup.className = 'guidance-section';
+          const patternLabel = document.createElement('span');
+          patternLabel.className = 'illustrative-label';
+          patternLabel.textContent = 'Example for the stated condition';
+          patternGroup.appendChild(patternLabel);
 
-        // Illustrative pattern
-        const patternText = guidance.illustrativePattern || '// Conceptual pattern: consult architectural guidelines and project security standards for safe implementation.';
-        const patternGroup = document.createElement('div');
-        patternGroup.className = 'guidance-section';
-        const patternLabel = document.createElement('span');
-        patternLabel.className = 'illustrative-label';
-        patternLabel.textContent = 'Illustrative pattern: adapt this to your project';
-        patternGroup.appendChild(patternLabel);
-
-        const patternBox = document.createElement('div');
-        patternBox.className = 'guidance-code-box';
-        const patternEl = document.createElement('code');
-        patternEl.className = 'guidance-code-snippet';
-        patternEl.textContent = patternText;
-        patternBox.appendChild(patternEl);
-        patternGroup.appendChild(patternBox);
-        el.appendChild(patternGroup);
-
-        // Educational Disclaimer Banner
-        const disclaimerEl = document.createElement('div');
-        disclaimerEl.className = 'disclaimer-banner';
-        disclaimerEl.textContent = guidanceDisclaimer;
-        el.appendChild(disclaimerEl);
-
-        if (issue.cvssVector) {
-          const cvssFooter = document.createElement('div');
-          cvssFooter.className = 'cvss-vector-footer';
-          cvssFooter.textContent = 'Vector: ' + issue.cvssVector;
-          el.appendChild(cvssFooter);
-        }
-      }));
+          const patternBox = document.createElement('div');
+          patternBox.className = 'guidance-code-box';
+          const patternEl = document.createElement('code');
+          patternEl.className = 'guidance-code-snippet';
+          patternEl.textContent = guidance.illustrativePattern;
+          patternBox.appendChild(patternEl);
+          patternGroup.appendChild(patternBox);
+          el.appendChild(patternGroup);
+        }));
+      }
 
       container.appendChild(detailsContainer);
+
+      const disclaimerEl = document.createElement('div');
+      disclaimerEl.className = 'disclaimer-banner';
+      disclaimerEl.textContent = guidanceDisclaimer;
+      container.appendChild(disclaimerEl);
+
+      if (issue.cvssVector) {
+        const cvssFooter = document.createElement('div');
+        cvssFooter.className = 'cvss-vector-footer';
+        cvssFooter.textContent = 'Vector: ' + issue.cvssVector;
+        container.appendChild(cvssFooter);
+      }
     }
     </script>
 </body>

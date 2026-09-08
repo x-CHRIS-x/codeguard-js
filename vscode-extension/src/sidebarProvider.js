@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { getGuidance: _getGuidance, getAllGuidance, GUIDANCE_DISCLAIMER } = require('./data/guidanceCatalog');
+const { getAllGuidance, FALLBACK_GUIDANCE, GUIDANCE_DISCLAIMER } = require('./data/guidanceCatalog');
 
 /**
  * OWASP Categories Metadata
@@ -169,6 +169,7 @@ class JSentinelSidebarProvider {
 
   _getHtmlForWebview(_webview) {
     const guidanceCatalogJson = JSON.stringify(getAllGuidance()).replace(/</g, '\\u003c');
+    const fallbackGuidanceJson = JSON.stringify(FALLBACK_GUIDANCE).replace(/</g, '\\u003c');
     const disclaimerJson = JSON.stringify(GUIDANCE_DISCLAIMER).replace(/</g, '\\u003c');
     const owaspJson = JSON.stringify(OWASP_CATEGORIES).replace(/</g, '\\u003c');
 
@@ -176,9 +177,10 @@ class JSentinelSidebarProvider {
     const template = fs.readFileSync(htmlPath, 'utf8');
 
     return template
-      .replace('__GUIDANCE_CATALOG_JSON__', guidanceCatalogJson)
-      .replace('__DISCLAIMER_JSON__', disclaimerJson)
-      .replace('__OWASP_JSON__', owaspJson);
+      .replace('__GUIDANCE_CATALOG_JSON__', () => guidanceCatalogJson)
+      .replace('__FALLBACK_GUIDANCE_JSON__', () => fallbackGuidanceJson)
+      .replace('__DISCLAIMER_JSON__', () => disclaimerJson)
+      .replace('__OWASP_JSON__', () => owaspJson);
   }
 }
 

@@ -323,8 +323,9 @@ const generatePDFBuffer = ({ scannedFiles = {}, stats, fpFlags = [], projectName
       const guidanceId = record?.guidanceId || 'GENERAL';
       const recordTitle = (record?.title || 'Security Recommendation').toUpperCase();
       const headerTitle = `REMEDIATION GUIDANCE: ${guidanceId} - ${recordTitle}`;
-      doc.text(headerTitle, 14, y);
-      y += 4.5;
+      const headerLines = doc.splitTextToSize(headerTitle, 182);
+      doc.text(headerLines, 14, y);
+      y += headerLines.length * 4.5;
 
       // Metadata: Category and Scope
       doc.setFontSize(8);
@@ -332,19 +333,28 @@ const generatePDFBuffer = ({ scannedFiles = {}, stats, fpFlags = [], projectName
       doc.setTextColor(...brand.gray);
       const categoryStr = record?.category || 'General Security';
       const scopeStr = (record?.scope || 'cross-boundary').toUpperCase();
-      doc.text(`Category: ${categoryStr} | Scope: ${scopeStr}`, 14, y);
-      y += 5.5;
+      const metadataLines = doc.splitTextToSize(`Category: ${categoryStr} | Remediation scope: ${scopeStr}`, 182);
+      doc.text(metadataLines, 14, y);
+      y += metadataLines.length * 3.8 + 1.7;
 
-      // Recommended Action
-      y = checkHeightAndPageBreak(doc, 20, y);
+      // Keep the applicability condition and action together across page breaks.
       doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const contextLines = doc.splitTextToSize(record?.contextCheck || 'Confirm the purpose and source of the flagged value before choosing a change.', 182);
+      const actionText = record?.recommendedAction || record?.shortAction || 'Review the flagged code against project security requirements.';
+      const actionLines = doc.splitTextToSize(actionText, 182);
+      y = checkHeightAndPageBreak(doc, 13 + (contextLines.length + actionLines.length) * 3.8, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...brand.charcoal);
+      doc.text('CHECK FIRST:', 14, y);
+      y += 3.5;
+      doc.setFont('helvetica', 'normal');
+      doc.text(contextLines, 14, y);
+      y += contextLines.length * 3.8 + 3;
+      doc.setFont('helvetica', 'bold');
       doc.text('RECOMMENDED ACTION:', 14, y);
       y += 3.5;
       doc.setFont('helvetica', 'normal');
-      const actionText = record?.recommendedAction || record?.shortAction || 'Review the flagged code against project security requirements.';
-      const actionLines = doc.splitTextToSize(actionText, 182);
       doc.text(actionLines, 14, y);
       y += (actionLines.length * 3.8) + 3;
 
@@ -407,16 +417,27 @@ const generatePDFBuffer = ({ scannedFiles = {}, stats, fpFlags = [], projectName
         y += 1.5;
       }
 
+      // Keep references and their guidance note together at page boundaries.
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      const referenceLines = (record.references || []).map(ref => doc.splitTextToSize(`- ${ref.title}: ${ref.url}`, 178));
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7);
+      const discLines = doc.splitTextToSize(GUIDANCE_DISCLAIMER, 182);
+      const referencesHeight = referenceLines.length
+        ? 5 + referenceLines.reduce((height, lines) => height + lines.length * 3.5 + 1.2, 0)
+        : 0;
+      const noteHeight = discLines.length * 3.2 + 6;
+      y = checkHeightAndPageBreak(doc, Math.min(245, referencesHeight + noteHeight), y);
+
       // Authoritative References (if present)
       if (record.references && record.references.length > 0) {
-        y = checkHeightAndPageBreak(doc, 15, y);
         doc.setFontSize(7.5);
         doc.setFont('helvetica', 'bold');
-        doc.text('AUTHORITATIVE REFERENCES:', 14, y);
+        doc.text(`AUTHORITATIVE REFERENCES: ${guidanceId}`, 14, y);
         y += 3.5;
         doc.setFont('helvetica', 'normal');
-        record.references.forEach(ref => {
-          const refLines = doc.splitTextToSize(`- ${ref.title}: ${ref.url}`, 178);
+        referenceLines.forEach(refLines => {
           y = checkHeightAndPageBreak(doc, (refLines.length * 3.5) + 2, y);
           doc.text(refLines, 16, y);
           y += (refLines.length * 3.5) + 1.2;
@@ -425,11 +446,10 @@ const generatePDFBuffer = ({ scannedFiles = {}, stats, fpFlags = [], projectName
       }
 
       // Mandatory Educational Disclaimer
-      y = checkHeightAndPageBreak(doc, 14, y);
+      y = checkHeightAndPageBreak(doc, noteHeight, y);
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(7);
       doc.setTextColor(...brand.gray);
-      const discLines = doc.splitTextToSize(GUIDANCE_DISCLAIMER, 182);
       doc.text(discLines, 14, y);
       y += (discLines.length * 3.2) + 6;
       doc.setFont('helvetica', 'normal');
@@ -540,7 +560,7 @@ const generatePDFBuffer = ({ scannedFiles = {}, stats, fpFlags = [], projectName
 
     // Page count indicator
     doc.text(`CONFIDENTIAL SECURITY AUDIT REPORT  -  PAGE ${pageNum} OF ${totalPages}`, 14, 287);
-    doc.text('GENERATED VIA JSENTINEL VS CODE EXTENSION', 135, 287);
+    doc.text('GENERATED VIA JSENTINEL VS CODE EXTENSION', 196, 287, { align: 'right' });
   }
 
   return Buffer.from(doc.output('arraybuffer'));

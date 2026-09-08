@@ -5,7 +5,7 @@
  * Decouples pure data formatting (formatJSONReport) from browser DOM download (generateJSONReport).
  */
 
-import { GUIDANCE_DISCLAIMER } from '../data/guidanceCatalog.js';
+import { getGuidance, FALLBACK_GUIDANCE, GUIDANCE_DISCLAIMER } from '../data/guidanceCatalog.js';
 
 /**
  * Pure data formatting function that converts scan results into a structured report object.
@@ -39,6 +39,7 @@ export const formatJSONReport = (results = [], stats = {}, owaspCategories = [],
       res.issues.forEach(issue => {
         const fpKey = `${res.fileName}:${issue.id}:${issue.line}:${issue.column}`;
         const isFP = safeFpFlags.includes(fpKey);
+        const guidance = getGuidance(issue);
 
         flatIssues.push({
           fileName: res.fileName,
@@ -49,7 +50,7 @@ export const formatJSONReport = (results = [], stats = {}, owaspCategories = [],
           column: issue.column,
           sourceLine: issue.sourceLine || '',
           message: issue.message,
-          suggestion: issue.suggestion || '',
+          suggestion: guidance === FALLBACK_GUIDANCE ? (issue.suggestion || '') : guidance.recommendedAction,
           cvssBaseScore: issue.cvssBaseScore || null,
           cvssVector: issue.cvssVector || '',
           isFalsePositive: isFP
