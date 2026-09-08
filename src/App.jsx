@@ -107,6 +107,11 @@ function App() {
       if (next.has(compositeKey)) {
         next.delete(compositeKey);
       } else {
+        for (const existing of next) {
+          if (existing.startsWith(`${key}:`)) {
+            next.delete(existing);
+          }
+        }
         next.add(compositeKey);
       }
       return next;

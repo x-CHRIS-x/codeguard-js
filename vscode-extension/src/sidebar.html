@@ -1317,7 +1317,8 @@
     let selectedSeverity = previousState.selectedSeverity || 'ALL';
     let selectedCategory = previousState.selectedCategory || 'ALL';
     let searchQuery = previousState.searchQuery || '';
-    const expandedIssues = new Set(previousState.expandedKeys || []);
+    const rawExpanded = Array.isArray(previousState.expandedKeys) ? previousState.expandedKeys : [];
+    const expandedIssues = new Set(rawExpanded.slice(0, 1));
     const expandedGuidanceSections = new Set(previousState.expandedSectionKeys || previousState.expandedFullKeys || []);
 
     function persistClientState() {
@@ -1909,13 +1910,24 @@
           }
 
           accordionToggle.addEventListener('click', function() {
-            if (expandedIssues.has(issue.fpKey)) {
+            const wasExpanded = expandedIssues.has(issue.fpKey);
+            if (wasExpanded) {
               expandedIssues.delete(issue.fpKey);
               accordionToggle.setAttribute('aria-expanded', 'false');
               remediationContainer.style.display = 'none';
               const arrow = accordionToggle.querySelector('.accordion-arrow');
               if (arrow) arrow.classList.remove('expanded');
             } else {
+              targetContainer.querySelectorAll('.remediation-box').forEach(function(box) {
+                box.style.display = 'none';
+              });
+              targetContainer.querySelectorAll('.accordion-toggle').forEach(function(btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                const arr = btn.querySelector('.accordion-arrow');
+                if (arr) arr.classList.remove('expanded');
+              });
+              expandedIssues.clear();
+
               expandedIssues.add(issue.fpKey);
               accordionToggle.setAttribute('aria-expanded', 'true');
               renderRemediationContent(remediationContainer, issue);
@@ -2040,6 +2052,20 @@
             contentDiv.style.display = 'none';
             toggleBtn.querySelector('.guidance-detail-arrow').textContent = '▾';
           } else {
+            detailsContainer.querySelectorAll('.guidance-detail-content').forEach(function(div) {
+              div.style.display = 'none';
+            });
+            detailsContainer.querySelectorAll('.guidance-detail-toggle').forEach(function(btn) {
+              btn.setAttribute('aria-expanded', 'false');
+              const arr = btn.querySelector('.guidance-detail-arrow');
+              if (arr) arr.textContent = '▾';
+            });
+            for (const key of Array.from(expandedGuidanceSections)) {
+              if (key.startsWith(issue.fpKey + ':')) {
+                expandedGuidanceSections.delete(key);
+              }
+            }
+
             expandedGuidanceSections.add(compositeKey);
             toggleBtn.setAttribute('aria-expanded', 'true');
             contentDiv.innerHTML = '';
