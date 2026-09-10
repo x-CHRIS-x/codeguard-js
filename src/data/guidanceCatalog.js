@@ -13,7 +13,7 @@
  */
 
 export const GUIDANCE_DISCLAIMER =
-  "Guidance only — not a drop-in replacement. Choose an approach that preserves your code's intended behavior.";
+  "Use this as a guide. Make sure any changes keep your code working as intended.";
 
 export const EDUCATIONAL_DISCLAIMER = GUIDANCE_DISCLAIMER;
 
