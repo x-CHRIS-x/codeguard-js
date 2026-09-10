@@ -16,7 +16,7 @@ Relevant code includes the injection and XSS rule modules, `src/utils/scannerEng
 
 Check web cards, extension diagnostics and sidebar, severity counts, false-positive handling, saved new scans, PDF output, and JSON output. The surviving finding keeps its location, source evidence, guidance, severity, and a single applicable deduction.
 
-Keep the project's existing penalty formula unless a separate justified change is agreed. Explain that this aggregate score is a JSentinel heuristic; it is not detection accuracy or a FIRST-issued project score. Do not silently recalculate historical scans under the new behavior.
+Keep the project's existing severity-to-penalty weights for eligible vulnerability findings. Apply Phase 01's advisory policy: informational A06 review signals remain visible separately and do not enter vulnerability totals or deduct score points. Explain that this aggregate score is a JSentinel heuristic; it is not detection accuracy or a FIRST-issued project score. Do not silently recalculate historical scans under the new behavior.
 
 ## Checks and stopping point
 
@@ -26,5 +26,6 @@ Keep the project's existing penalty formula unless a separate justified change i
 - [ ] Two separate unsafe assignments remain two findings.
 - [ ] An unrelated vulnerability at the same location is retained.
 - [ ] Both scanners and their report consumers agree on counts and deductions.
+- [ ] Advisory-only A06 signals are shown separately and do not alter vulnerability totals or the project score in new scans.
 
 Deliver the correction and focused verification. Record any remaining HTML false positives as limitations for the later benchmark. Stop before modifying the 116-file dataset.
